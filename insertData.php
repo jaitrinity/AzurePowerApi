@@ -84,7 +84,7 @@ if($insertType == "project"){
 // 	);
 // 	echo json_encode($output);
 // }
-else if($insertType == "employees"){
+else if($insertType == "employees_old"){
 	$roleType = $jsonData->roleType;
 	$empCode = $jsonData->empCode;
 	$name = $jsonData->name;
@@ -174,7 +174,85 @@ else if($insertType == "employees"){
 	);
 	echo json_encode($output);
 }
+else if($insertType == "employees"){
+	$roleType = $jsonData->roleType;
+	$empCode = $jsonData->empCode;
+	$name = $jsonData->name;
+	$mobile = $jsonData->mobile;
+	$emailId = $jsonData->emailId;
+	$roleId = $jsonData->roleId;
+	$zone = $jsonData->zone;
+	$spocPerson = $jsonData->spocPerson;
+	$itemName = $jsonData->itemId;
+	$sampleType = $jsonData->sampleType;
+	// $passTxt = rand();
+	$passTxt = $mobile;
+	$password = base64_encode($passTxt);
+
+	if($roleType == "Employee"){
+		$sql = "SELECT * from `Employees` where (`EmpId`=? or `Mobile`=?) and `IsActive` = 1";
+		$stmt = $conn->prepare($sql);
+		$stmt->bind_param("ss", $empCode, $mobile);	
+		$message = "Employee already exist on $empCode or $mobile";
+
+		$insertSql = "INSERT INTO `Employees`(`EmpId`, `SpocPerson`, `Name`, `Mobile`, `EmailId`, `Password`, `RoleId`, `TenantId`) VALUES (?,?,'Azure',?,?,?,?,1)";
+		$insertStmt = $conn->prepare($insertSql);
+		$insertStmt->bind_param("sssssi", $empCode, $name, $mobile, $emailId, $password, $roleId);
+	}
+	else if($roleType == "TPI"){
+		$roleId = 4;
+
+		$sql = "SELECT * from `Employees` where (`EmpId`=? or `Mobile`=?) and `IsActive` = 1";
+		$stmt = $conn->prepare($sql);
+		$stmt->bind_param("ss", $empCode, $mobile);	
+		$message = "Employee already exist on $empCode or $mobile";
+
+		$insertSql = "INSERT INTO `Employees`(`EmpId`, `Name`, `Mobile`, `EmailId`, `Password`, `RoleId`, `Zone`, `TenantId`, `SpocPerson`) VALUES (?,?,?,?,?,?,?,3,?)";
+		$insertStmt = $conn->prepare($insertSql);
+		$insertStmt->bind_param("sssssiss", $empCode, $name, $mobile, $emailId, $password, $roleId, $zone, $spocPerson);
+	}
+	else if($roleType == "Vendor"){
+		$roleId = 2;
+
+		$sql = "SELECT * from `Employees` where (`EmpId`=? or `Mobile`=?) and `IsActive` = 1";
+		$stmt = $conn->prepare($sql);
+		$stmt->bind_param("ss", $empCode, $mobile);	
+		$message = "Employee already exist on $empCode or $mobile";
+
+		$insertSql = "INSERT INTO `Employees`(`EmpId`, `Name`, `Mobile`, `EmailId`, `Password`, `RoleId`, `TenantId`, `SpocPerson`, `ItemName`, `SampleType`) VALUES (?,?,?,?,?,?,2,?,?,?)";
+		$insertStmt = $conn->prepare($insertSql);
+		$insertStmt->bind_param("sssssisss", $empCode, $name, $mobile, $emailId, $password, $roleId, $spocPerson, $itemName, $sampleType);
+	}
+
+	$stmt->execute();
+	$query = $stmt->get_result();
+	$rowCount = mysqli_num_rows($query);
+	if($rowCount != 0){
+		$output = array(
+			'code' => 204, 
+			'message' => $message
+		);
+		echo json_encode($output);
+		return;
+	}
+	
+	if($insertStmt->execute()){
+		$code = 200;
+		$message = "Success";
+	}
+	else{
+		$code = 0;
+		$message = "Something wrong";
+	}
+
+	$output = array(
+		'code' => $code, 
+		'message' => $message
+	);
+	echo json_encode($output);
+}
 else if($insertType == "tpiAuditor"){
+	$loginEmpName = $jsonData->loginEmpName;
 	$empCode = $jsonData->empCode;
 	$name = $jsonData->name;
 	$mobile = $jsonData->mobile;
@@ -217,9 +295,9 @@ else if($insertType == "tpiAuditor"){
 	$passTxt = $mobile;
 	$password = base64_encode($passTxt);
 
-	$sql = "INSERT INTO `Employees`(`EmpId`, `Name`, `Mobile`, `EmailId`, `Password`, `RoleId`, `RMId`, `DOB`, `AadharNo`, `ProfilePic`, `TenantId`, `IsActive`, `CV`) VALUES (?,?,?,?,?,?,?,?,?,?,3,2,?)";
+	$sql = "INSERT INTO `Employees`(`EmpId`, `SpocPerson`, `Name`, `Mobile`, `EmailId`, `Password`, `RoleId`, `RMId`, `DOB`, `AadharNo`, `ProfilePic`, `TenantId`, `IsActive`, `CV`) VALUES (?,?,?,?,?,?,?,?,?,?,?,3,2,?)";
 	$stmt = $conn->prepare($sql);
-	$stmt->bind_param("sssssisssss", $empCode,$name,$mobile,$emailId,$password,$roleId,$loginEmpId,$dob,$aadharNo,$profilePic,$cv);
+	$stmt->bind_param("ssssssisssss", $empCode,$name,$loginEmpName,$mobile,$emailId,$password,$roleId,$loginEmpId,$dob,$aadharNo,$profilePic,$cv);
 	if($stmt->execute()){
 		$code = 200;
 		$message = "Employee successfully inserted";

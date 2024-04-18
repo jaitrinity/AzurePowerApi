@@ -67,7 +67,7 @@ else if($selectType == "inspectionRequest"){
 	}
 
 	// $sql = "SELECT ir.`IR_Id` as `irId`, ir.`ProjectName` as `projectName`, ir.`PO_No` as `poNo`, ir.`PO_Date` as `poDate`, ir.`LotNo` as `lotNo`, im.`SubItemName` as `offerItem`, ir.`OfferQty` as `offerQty`, ir.`ReadinessReport` as `readinessReport`, ir.`DimensionalReport` as `dimensionalReport`, ir.`Photograph` as `photograph`, ir.`ItemForInspection` as `itemForIns`, ir.`InspectionLocation` as `insLocation`, ir.`InspectionDate` as `insDate`, ir.`Status` as `status`, irs.`StatusTxt` as `statusTxt` FROM `InsReqMaster` ir join `ItemMaster` im on ir.OfferItem = im.ItemId join `IR_Status` irs on ir.`Status` = irs.`Status` WHERE 1=1 order by ir.`Id` desc";
-	$sql = "SELECT ir.`IR_Id` as `irId`, ir.`ProjectName` as `projectName`, ir.`PO_No` as `poNo`, ir.`PO_Date` as `poDate`, ir.`LotNo` as `lotNo`, im.`SubItemName` as `offerItem`, ir.`OfferQty` as `offerQty`, ir.`ReadinessReport` as `readinessReport`, ir.`DimensionalReport` as `dimensionalReport`, ir.`Photograph` as `photograph`, ir.`ItemForInspection` as `itemForIns`, ir.`InspectionLocation` as `insLocation`, ir.`InspectionDate` as `insDate`, `InspectionCloseDate` as `insCloseDate`, ir.`Status` as `status`, irs.`StatusTxt` as `statusTxt`, (case when ir.`TPI` is null then '-' else e.`Name` end) as `tpi`, (case when ir.`TPI_Auditor` is null then '-' else e1.`Name` end) as `tpiAuditor`, ir.`AuditDate` as `irCompletionDate` FROM `InsReqMaster` ir join `ItemMaster` im on ir.OfferItem = im.ItemId join `IR_Status` irs on ir.`Status` = irs.`Status` left join `Employees` e on ir.`TPI` = e.`EmpId` left join `Employees` e1 on ir.`TPI_Auditor` = e1.`EmpId` WHERE 1=1 $filterSql order by ir.`Id` desc";
+	$sql = "SELECT ir.`IR_Id` as `irId`, ir.`ProjectName` as `projectName`, ir.`PO_No` as `poNo`, ir.`PO_Date` as `poDate`, ir.`LotNo` as `lotNo`, im.`SubItemName` as `offerItem`, ir.`OfferQty` as `offerQty`, ir.`ReadinessReport` as `readinessReport`, ir.`DimensionalReport` as `dimensionalReport`, ir.`Photograph` as `photograph`, ir.`ItemForInspection` as `itemForIns`, ir.`InspectionLocation` as `insLocation`, ir.`InspectionDate` as `insDate`, `InspectionCloseDate` as `insCloseDate`, ir.`Status` as `status`, irs.`StatusTxt` as `statusTxt`, (case when ir.`TPI` is null then '-' else e.`SpocPerson` end) as `tpi`, (case when ir.`TPI_Auditor` is null then '-' else e1.`SpocPerson` end) as `tpiAuditor`, ir.`AuditDate` as `irCompletionDate`, ir.`ProbDesc` as `probDesc`, ir.`DefectPhoto` as `defectPhoto`, ir.`ImmeCorrecDet` as `immeCorrecDet`, ir.`DefineAndVerifyRootCause` as `defineAndVerifyRootCause`, ir.`ValidationCause` as `validationCause`, ir.`CorrectiveActions` as `correctiveActions`, `TargetDate` as `targetDate` FROM `InsReqMaster` ir join `ItemMaster` im on ir.OfferItem = im.ItemId join `IR_Status` irs on ir.`Status` = irs.`Status` left join `Employees` e on ir.`TPI` = e.`EmpId` left join `Employees` e1 on ir.`TPI_Auditor` = e1.`EmpId` WHERE 1=1 $filterSql order by ir.`Id` desc";
 	$query = mysqli_query($conn,$sql);
 	$dataList = array();
 	while ($row = mysqli_fetch_assoc($query)) {
@@ -76,7 +76,7 @@ else if($selectType == "inspectionRequest"){
 	echo json_encode($dataList);
 }
 else if($selectType == "employees"){
-	$sql = "SELECT e.Id as `id`, e.EmpId as `empId`, e.Name as `name`, e.Mobile as `mobile`, e.EmailId as `emailId`, e.Zone as `zone`, `CV` as `cv`, e.RoleId as `roleId`, r.Role as `role`, e.SpocPerson as `spocPerson`, e.SampleType as `sampleType`, e.IsActive as `isActive`, (case when e.IsActive=1 then 'Active' when e.IsActive=2 then 'Pending' else 'Deactive' end) as `activeStatus` FROM Employees e join RoleMaster r on e.RoleId = r.RoleId order by e.Id desc";
+	$sql = "SELECT e.Id as `id`, e.EmpId as `empId`, e.SpocPerson as `name`, e.Mobile as `mobile`, e.EmailId as `emailId`, e.Zone as `zone`, `CV` as `cv`, e.RoleId as `roleId`, r.Role as `role`, e.SpocPerson as `spocPerson`, e.SampleType as `sampleType`, e.IsActive as `isActive`, (case when e.IsActive=1 then 'Active' when e.IsActive=2 then 'Pending' when e.IsActive=3 then 'Rejected' else 'Deactive' end) as `activeStatus`, e.`ActionDate` as `actionDate`, e.`ActionRemark` as `actionRemark` FROM Employees e join RoleMaster r on e.RoleId = r.RoleId order by e.Id desc";
 	$query = mysqli_query($conn,$sql);
 	$dataList = array();
 	while ($row = mysqli_fetch_assoc($query)) {
@@ -90,7 +90,7 @@ else if($selectType == "tpiAuditor"){
 	if($recordType == ""){
 		$filterSql .= "and `IsActive`=1 ";
 	}
-	$sql = "SELECT `EmpId` as `empId`, `Name` as `name`, `Mobile` as `mobile`, `EmailId` as `emailId`, `DOB` as `dob`, `AadharNo` as `aadharNo`, `ProfilePic` as `profilePic`, `CV` as `cv`, (case when `IsActive`=1 then 'Active' when `IsActive`=2 then 'Pending' else 'Deactive' end) as `activeStatus` FROM `Employees` where 1=1 and `RMId`='$loginEmpId' and `RoleId`=5 $filterSql order by `Id` desc";
+	$sql = "SELECT `EmpId` as `empId`, `SpocPerson` as `name`, `Mobile` as `mobile`, `EmailId` as `emailId`, `DOB` as `dob`, `AadharNo` as `aadharNo`, `ProfilePic` as `profilePic`, `CV` as `cv`, (case when `IsActive`=1 then 'Active' when `IsActive`=2 then 'Pending' else 'Deactive' end) as `activeStatus` FROM `Employees` where 1=1 and `RMId`='$loginEmpId' and `RoleId`=5 $filterSql order by `Id` desc";
 	$query = mysqli_query($conn,$sql);
 	$dataList = array();
 	while ($row = mysqli_fetch_assoc($query)) {
@@ -99,7 +99,7 @@ else if($selectType == "tpiAuditor"){
 	echo json_encode($dataList);
 }
 else if($selectType == "tpi"){
-	$sql = "SELECT `EmpId` as `empId`, `Name` as `name`, `Mobile` as `mobile`, `EmailId` as `emailId` FROM `Employees` where 1=1 and `RoleId`=4 and `IsActive`=1 order by `Id` desc";
+	$sql = "SELECT `EmpId` as `empId`, `SpocPerson` as `name`, `Mobile` as `mobile`, `EmailId` as `emailId` FROM `Employees` where 1=1 and `RoleId`=4 and `IsActive`=1 order by `Id` desc";
 	$query = mysqli_query($conn,$sql);
 	$dataList = array();
 	while ($row = mysqli_fetch_assoc($query)) {
@@ -122,7 +122,7 @@ else if($selectType == "scar"){
 	else if($loginEmpRoleId == 5){
 		$filterSql .= "and sm.VendorId='$loginEmpId' and sm.Action in (1,3,4) ";
 	}
-	$sql="SELECT sm.Id as `scarId`, sm.ActivityId as `activityId`, e.Name as `name`, a.MobileDateTime as `submitDate`, sm.Action as `status`, ss.StatusTxt as `statusTxt`, m.CheckpointId as `checkpointId` from ScarMaster sm join ScarStatus ss on sm.Action=ss.Action join Activity a on sm.ActivityId=a.ActivityId and a.Event='Submit' join Employees e on a.EmpId=e.EmpId join Menu m on a.MenuId=m.MenuId where 1=1 $filterSql ORDER by sm.Id desc";
+	$sql="SELECT sm.Id as `scarId`, sm.ActivityId as `activityId`, e.SpocPerson as `name`, a.MobileDateTime as `submitDate`, sm.Action as `status`, ss.StatusTxt as `statusTxt`, m.CheckpointId as `checkpointId`, sm.`Remark` as `remark` from ScarMaster sm join ScarStatus ss on sm.Action=ss.Action join Activity a on sm.ActivityId=a.ActivityId and a.Event='Submit' join Employees e on a.EmpId=e.EmpId join Menu m on a.MenuId=m.MenuId where 1=1 $filterSql ORDER by sm.Id desc";
 	// echo $sql;
 	$query = mysqli_query($conn,$sql);
 	$resultList = array();
@@ -157,7 +157,7 @@ else if($selectType == "mrn"){
 	else if($loginEmpRoleId == 5){
 		$filterSql .= "and mrn.VendorId='$loginEmpId' and mrn.Action in (1,3,4) ";
 	}
-	$sql="SELECT mrn.Id as `mrnId`, mrn.ActivityId as `activityId`, e.Name as `name`, ms.StatusTxt as `statusTxt`, a.MobileDateTime as `submitDate`, m.CheckpointId as `checkpointId` from MrnMaster mrn join MrnStatus ms on mrn.Action = ms.Action join Activity a on mrn.ActivityId=a.ActivityId and a.Event='Submit' join Employees e on a.EmpId=e.EmpId join Menu m on a.MenuId=m.MenuId where 1=1 $filterSql ORDER by mrn.Id desc";
+	$sql="SELECT mrn.Id as `mrnId`, mrn.ActivityId as `activityId`, e.SpocPerson as `name`, ms.StatusTxt as `statusTxt`, a.MobileDateTime as `submitDate`, m.CheckpointId as `checkpointId` from MrnMaster mrn join MrnStatus ms on mrn.Action = ms.Action join Activity a on mrn.ActivityId=a.ActivityId and a.Event='Submit' join Employees e on a.EmpId=e.EmpId join Menu m on a.MenuId=m.MenuId where 1=1 $filterSql ORDER by mrn.Id desc";
 	// echo $sql;
 	$query = mysqli_query($conn,$sql);
 	$resultList = array();
@@ -184,7 +184,7 @@ else if($selectType == "travelExpense"){
 	if($recordType == "pending"){
 		$filterSql .= "and sm.Action=0 ";
 	}
-	$sql="SELECT sm.Id as `expenseId`, sm.ActivityId as `activityId`, e.Name as `name`, a.MobileDateTime as `submitDate`, sm.Action as `status`, (case when sm.Action=0 then 'Pending' when sm.Action=1 then 'Approved' else 'Rejected' end) as `statusTxt`, m.CheckpointId as `checkpointId` from ExpenseMaster sm join Activity a on sm.ActivityId=a.ActivityId and a.Event='Submit' join Employees e on a.EmpId=e.EmpId join Menu m on a.MenuId=m.MenuId where 1=1 $filterSql ORDER by sm.Id desc";
+	$sql="SELECT sm.Id as `expenseId`, sm.ActivityId as `activityId`, e.SpocPerson as `name`, a.MobileDateTime as `submitDate`, sm.Action as `status`, (case when sm.Action=0 then 'Pending' when sm.Action=1 then 'Approved' else 'Rejected' end) as `statusTxt`, m.CheckpointId as `checkpointId`, sm.Remark as `remark` from ExpenseMaster sm join Activity a on sm.ActivityId=a.ActivityId and a.Event='Submit' join Employees e on a.EmpId=e.EmpId join Menu m on a.MenuId=m.MenuId where 1=1 $filterSql ORDER by sm.Id desc";
 	$query = mysqli_query($conn,$sql);
 	$resultList = array();
 	while ($row = mysqli_fetch_assoc($query)) {

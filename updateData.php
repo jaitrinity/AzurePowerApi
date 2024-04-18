@@ -17,8 +17,9 @@ $loginEmpRoleId = $jsonData->loginEmpRoleId;
 if($updateType == "employeeStatus"){
 	$id = $jsonData->id;
 	$status = $jsonData->status;
+	$remark = $jsonData->remark;
 
-	$sql="UPDATE `Employees` set `IsActive`=$status where `Id`=$id";
+	$sql="UPDATE `Employees` set `IsActive`=$status, `ActionRemark`='$remark' where `Id`=$id";
 	$stmt = $conn->prepare($sql);
 
 	if($stmt->execute()){

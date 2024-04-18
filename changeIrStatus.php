@@ -31,6 +31,7 @@ $defineAndVerifyRootCauseDoc = $jsonData->defineAndVerifyRootCauseDoc;
 $correctiveActions = $jsonData->correctiveActions;
 $targetDate = $jsonData->targetDate;
 $remark = $jsonData->remark;
+$mdccNo = $irId.'_'.rand(1000,9999);
 $moreUpdate="";
 if($beforeStatus == "IR_0"){
 	$moreUpdate .= ", `TPI`='$tpiEmpId'";
@@ -43,6 +44,13 @@ else if($beforeStatus == "IR_3"){
 }
 else if($beforeStatus == "IR_4"){
 	$moreUpdate .= ", `SQT_Observation`='$observation', `MaterialDispatchStatus`='$materialDispatchStatus'";
+	if($materialDispatchStatus == "MDCC"){
+		$status = "IR_5";
+		$moreUpdate .= ", `MDCC_No`='$mdccNo'";
+	}
+	else if($materialDispatchStatus == "Reject"){
+		$status = "IR_101";
+	}
 }
 else if($beforeStatus == "IR_101"){
 	if($status == "IR_102"){
@@ -101,7 +109,7 @@ if($stmt->execute()){
 			$irRow = mysqli_fetch_assoc($irQuery);
 			$offerQty = $irRow["OfferQty"];
 
-			$mdccNo = $irId.'_'.rand(1000,9999);
+			
 			$mdccSql = "INSERT INTO `IR_MDCC`(`IR_Id`, `MDCC_No`, `Observations`, `Remarks`, `MaterialDispatchStatus`, `OfferQty`, `RemainingQty`) VALUES (?,?,?,?,?,?,?)";
 			$mdccStmt = $conn->prepare($mdccSql);
 			$mdccStmt->bind_param("sssssii", $irId, $mdccNo, $observation, $remark, $materialDispatchStatus, $offerQty, $offerQty);

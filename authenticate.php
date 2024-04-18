@@ -13,7 +13,7 @@ $mobile = $jsonData->mobile;
 $password = $jsonData->password;
 
 $empArr = array();
-$sql = "SELECT e.EmpId, e.Name, e.RoleId, e.Password, e.IsActive, rm.Role FROM Employees e join RoleMaster rm on e.RoleId = rm.RoleId WHERE e.Mobile = BINARY('$mobile')";
+$sql = "SELECT e.EmpId, e.SpocPerson, e.RoleId, e.Password, e.IsActive, rm.Role FROM Employees e join RoleMaster rm on e.RoleId = rm.RoleId WHERE e.Mobile = BINARY('$mobile')";
 	
 $query = mysqli_query($conn,$sql);
 
@@ -40,7 +40,7 @@ if(mysqli_num_rows($query) != 0){
 	}
 
 	$empId = $row["EmpId"];
-	$empName = $row["Name"];
+	$empName = $row["SpocPerson"];
 	$roleId = $row["RoleId"];
 	$role = $row["Role"];
 
