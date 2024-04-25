@@ -21,13 +21,17 @@ $loginEmpRoleId = $jsonData->loginEmpRoleId;
 // 	return;
 // }
 
-$projectIdList = array();
+$sql = "SELECT `ProjectName` as `project` FROM `ProjectMaster` where `IsActive`=1 order by `Id` desc";
+$query = mysqli_query($conn,$sql);
+$projectList = array();
+while ($row = mysqli_fetch_assoc($query)) {
+	array_push($projectList, $row);
+}
+
 $sql = "SELECT * FROM `PO_Master` where `CreateBy`='$loginEmpId' and `IsActive`=1 order by `Id` desc";
 $query = mysqli_query($conn,$sql);
 $poList = array();
 while ($row = mysqli_fetch_assoc($query)) {
-	$projectId = $row["ProjectId"];
-	array_push($projectIdList, $projectId);
 	$poNo = $row["PO_No"];
 	$poDate = $row["PO_Date"];
 	$noOfItems = $row["NoOfItems"];
@@ -49,18 +53,10 @@ while ($row = mysqli_fetch_assoc($query)) {
 	}
 
 	$poJson = array(
-		'projectId' => $projectId, 'poNo' => $poNo, 'poDate' => $poDate, 'noOfItems' => $noOfItems,
+		'poNo' => $poNo, 'poDate' => $poDate, 'noOfItems' => $noOfItems,
 		'poItemList' => $poItemList
 	);
 	array_push($poList, $poJson);
-}
-
-$projectIds = implode(",", $projectIdList);
-$sql = "SELECT `Id` as `projectId`, `ProjectName` as `project` FROM `ProjectMaster` where `Id` in ($projectIds) and `IsActive`=1 order by `Id` desc";
-$query = mysqli_query($conn,$sql);
-$projectList = array();
-while ($row = mysqli_fetch_assoc($query)) {
-	array_push($projectList, $row);
 }
 
 $sql = "SELECT ir.`IR_Id` as `irId`, ir.`ProjectName` as `projectName`, ir.`PO_No` as `poNo`, ir.`PO_Date` as `poDate`, ir.`LotNo` as `lotNo`, im.`SubItemName` as `offerItem`, ir.`OfferQty` as `offerQty`, ir.`ReadinessReport` as `readinessReport`, ir.`DimensionalReport` as `dimensionalReport`, ir.`Photograph` as `photograph`, ir.`ItemForInspection` as `itemForIns`, ir.`InspectionLocation` as `insLocation`, ir.`InspectionDate` as `insDate`, `InspectionCloseDate` as `insCloseDate` FROM `InsReqMaster` ir join `ItemMaster` im on ir.OfferItem = im.ItemId WHERE `CreateBy`='$loginEmpId' and `Status`='IR_102' order by ir.`Id` desc";

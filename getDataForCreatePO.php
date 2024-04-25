@@ -24,8 +24,15 @@ while ($row = mysqli_fetch_assoc($query)) {
 	array_push($itemList, $row);
 }
 
+$projectList = [];
+$sql = "SELECT `Id` as `projectId`, `ProjectName` as `projectName` FROM `ProjectMaster` where `IsActive`=1";
+$query = mysqli_query($conn,$sql);
+while ($row = mysqli_fetch_assoc($query)) {
+	array_push($projectList, $row);
+}
 
-$output = array('itemList' => $itemList);
+
+$output = array('itemList' => $itemList, 'projectList' => $projectList);
 echo json_encode($output);
 
 

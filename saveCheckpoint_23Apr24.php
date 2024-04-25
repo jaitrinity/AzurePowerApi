@@ -187,9 +187,6 @@ if($event == 'Submit'){
 					$dependUpon = $valueObj["dependUpon"];
 					$dependChkId = ($dependUpon == null || $dependUpon == "") ? 0 : $dependUpon;
 
-					if($chkp_id == 745) $tpiId=$value;
-					else if($chkp_id == 725) $tpiRemark=$value;
-
 					$insertInTransDtl="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES (?,?,?,?,?,?)";
 					$stmt = $conn->prepare($insertInTransDtl);
 					$stmt->bind_param("iissii", $activityId, $chkp_id, $value, $dateTime, $sampleNo, $dependChkId);
@@ -219,12 +216,6 @@ if($event == 'Submit'){
 
 		$updateTransHdrSql = "UPDATE TransactionHDR set `Status`='$afterStatus' where ActivityId = $actId";
 		mysqli_query($conn,$updateTransHdrSql);
-
-		$tpiIdExp = explode(" --- ", $tpiId);
-		$tpiEmpId = $tpiIdExp[0];
-
-		$irStatus="UPDATE `InsReqMaster` SET `Status`='$afterStatus', `TPI`='$tpiEmpId', `Remark`='$tpiRemark' where `IR_Id`='$irId'";
-		mysqli_query($conn,$irStatus);
 	}
 	
 	$output = new StdClass;

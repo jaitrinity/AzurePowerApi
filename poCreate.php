@@ -13,6 +13,7 @@ $jsonData=json_decode($json);
 
 $loginEmpId = $jsonData->loginEmpId;
 $loginEmpRoleId = $jsonData->loginEmpRoleId;
+$projectId = $jsonData->projectId;
 $poNo = $jsonData->poNo;
 $poDate = $jsonData->poDate;
 $noOfItem = $jsonData->noOfItem;
@@ -29,9 +30,9 @@ if($rowCount !=0){
 	return;
 }
 
-$sql = "INSERT INTO `PO_Master`(`PO_No`, `PO_Date`, `NoOfItems`, `CreateBy`) VALUES (?,?,?,?)";
+$sql = "INSERT INTO `PO_Master`(`ProjectId`, `PO_No`, `PO_Date`, `NoOfItems`, `CreateBy`) VALUES (?,?,?,?,?)";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("ssss",$poNo, $poDate, $noOfItem, $loginEmpId);
+$stmt->bind_param("issss",$projectId, $poNo, $poDate, $noOfItem, $loginEmpId);
 if($stmt->execute()){
 	
 	$dataList = array();

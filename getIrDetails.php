@@ -68,7 +68,7 @@ while ($row = mysqli_fetch_assoc($query)) {
 	$resultJson = array(
 		// 'category' => $cat.' - '.$subCat.' - '.$cap, 
 		'caption' => $caption, 
-		'sampleSize' => $sampleSize,
+		'sampleSize' => $sampleSize == null ? "1" : $sampleSize,
 		'auditDate' => $auditDate == null ? "" : $auditDate,
 		'dataList' => $dataList
 	);

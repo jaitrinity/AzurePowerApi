@@ -76,7 +76,7 @@ else if($selectType == "inspectionRequest"){
 	echo json_encode($dataList);
 }
 else if($selectType == "employees"){
-	$sql = "SELECT e.Id as `id`, e.EmpId as `empId`, e.SpocPerson as `name`, e.Mobile as `mobile`, e.EmailId as `emailId`, e.Zone as `zone`, `CV` as `cv`, e.RoleId as `roleId`, r.Role as `role`, e.SpocPerson as `spocPerson`, e.SampleType as `sampleType`, e.IsActive as `isActive`, (case when e.IsActive=1 then 'Active' when e.IsActive=2 then 'Pending' when e.IsActive=3 then 'Rejected' else 'Deactive' end) as `activeStatus`, e.`ActionDate` as `actionDate`, e.`ActionRemark` as `actionRemark` FROM Employees e join RoleMaster r on e.RoleId = r.RoleId order by e.Id desc";
+	$sql = "SELECT e.Id as `id`, e.EmpId as `empId`, e.Name as `name`, e.Mobile as `mobile`, e.EmailId as `emailId`, e.Zone as `zone`, `CV` as `cv`, e.RoleId as `roleId`, r.Role as `role`, e.SpocPerson as `spocPerson`, e.SampleType as `sampleType`, e.IsActive as `isActive`, (case when e.IsActive=1 then 'Active' when e.IsActive=2 then 'Pending' when e.IsActive=3 then 'Rejected' else 'Deactive' end) as `activeStatus`, e.`ActionDate` as `actionDate`, e.`ActionRemark` as `actionRemark` FROM Employees e join RoleMaster r on e.RoleId = r.RoleId order by e.Id desc";
 	$query = mysqli_query($conn,$sql);
 	$dataList = array();
 	while ($row = mysqli_fetch_assoc($query)) {
@@ -206,9 +206,12 @@ else if($selectType == "travelExpense"){
 else if($selectType == "portalMenu"){
 	$filterSql="";
 	if($loginEmpRoleId !=1){
-		$filterSql .= "and find_in_set($loginEmpRoleId,`RoleId`) <> 0 ";
+		$filterSql .= "and find_in_set($loginEmpRoleId,pm.RoleId) <> 0 ";
 	}
-	$sql = "SELECT `RouterLink` as `routerLink`, `PageName` as `pageName`, `MenuName` as `menuName` FROM `PortalMenu` where `IsActive`=1 $filterSql ORDER by `DisplayOrder`";
+	// $sql = "SELECT `RouterLink` as `routerLink`, `PageName` as `pageName`, `MenuName` as `menuName` FROM `PortalMenu` where `IsActive`=1 $filterSql ORDER by `DisplayOrder`";
+
+	$sql = "SELECT pm.Id as portalId, pm.RouterLink as `routerLink`, pm.PageName as `pageName`, pm.MenuName as `menuName`, (case when pc.MenuColumns is null then '' else pc.MenuColumns end) as `menuColumns` FROM PortalMenu pm left join PortalColumn pc on pm.Id=pc.PortalId and pc.EmpId='$loginEmpId' where pm.IsActive=1 $filterSql ORDER by pm.DisplayOrder";
+	// echo $sql;
 	$query = mysqli_query($conn,$sql);
 	$dataList = array();
 	while ($row = mysqli_fetch_assoc($query)) {

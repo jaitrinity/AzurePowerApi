@@ -114,9 +114,10 @@ while($row = mysqli_fetch_assoc($assignQuery)){
 		$assignObj->activityId = '';
 		$assignObj->status = '';
 		$assignObj->uniqueId = $row["MappingId"];
+		$assignObj->sampleSize = $sampleSize;
 		$assignObj->isDataSend = $isDataSend;
 		$assignObj->checkpointId = $row['CheckpointId'];
-		$assignObj->sampleSize = $sampleSize;
+		$assignObj->value = [];
 		
 		array_push($wrappedListArray,$assignObj);
 	}
@@ -148,9 +149,11 @@ while($row = mysqli_fetch_assoc($assignQuery)){
 		$assignObj1->activityId = '';
 		$assignObj1->status = '';
 		$assignObj1->uniqueId = $row["MappingId"];
+		$assignObj1->sampleSize = $sampleSize;
 		$assignObj1->isDataSend = $isDataSend;
 		$assignObj1->checkpointId = $row['CheckpointId'];
-		$assignObj1->sampleSize = $sampleSize;
+		$assignObj1->value = [];
+
 		array_push($wrappedListArray,$assignObj1);
 
 		// array_push($assignArray1,$assignObj1);
@@ -193,9 +196,11 @@ while($row = mysqli_fetch_assoc($assignQuery)){
 		$assignObj2->activityId = '';
 		$assignObj2->status = '';
 		$assignObj2->uniqueId = $row["MappingId"];
+		$assignObj2->sampleSize = $sampleSize;
 		$assignObj2->isDataSend = $isDataSend;
 		$assignObj2->checkpointId = $row['CheckpointId'];
-		$assignObj2->sampleSize = $sampleSize;
+		$assignObj2->value = [];
+
 		array_push($wrappedListArray,$assignObj2);
 				
 		// array_push($assignArray2,$assignObj2);
@@ -209,13 +214,19 @@ while($row = mysqli_fetch_assoc($assignQuery)){
 }
 
 
+// $pendingSql = "SELECT mp.ActivityId,mp.MenuId,mp.LocationId,l.Name,l.GeoCoordinates,mp.StartDate,mp.EndDate,
+		// m.Category,m.SubCategory,m.Caption,m.Icons,m.CheckpointId,m.Colors,fa.FlowCheckpointId,h.Status FROM FlowActivityMaster fa join TransactionHDR h on fa.ActivityId = h.ActivityId and fa.Status = h.Status join Mapping mp on h.ActivityId = mp.ActivityId join Menu m on (mp.MenuId = m.MenuId) left join Location l on (mp.LocationId = l.LocationId) where find_in_set('$empId', fa.EmpId) <> 0";
+
 $pendingSql = "SELECT mp.ActivityId,mp.MenuId,mp.LocationId,l.Name,l.GeoCoordinates,mp.StartDate,mp.EndDate,
-		m.Category,m.SubCategory,m.Caption,m.Icons,m.CheckpointId,m.Colors,fa.FlowCheckpointId,h.Status FROM FlowActivityMaster fa join TransactionHDR h on fa.ActivityId = h.ActivityId and fa.Status = h.Status join Mapping mp on h.ActivityId = mp.ActivityId join Menu m on (mp.MenuId = m.MenuId) left join Location l on (mp.LocationId = l.LocationId) where find_in_set('$empId', fa.EmpId) <> 0";
+		m.Category,m.SubCategory,m.Caption,m.Icons,m.CheckpointId,m.Colors,fa.FlowCheckpointId,h.Status,mp.IR_Id, (case when m.SampleSize is not null then m.SampleSize else ir.SampleSize end) as SampleSize, concat(im.ItemName,' - ',im.SubItemName) as ProductName FROM FlowActivityMaster fa join TransactionHDR h on fa.ActivityId = h.ActivityId and fa.Status = h.Status join Mapping mp on h.ActivityId = mp.ActivityId join Menu m on (mp.MenuId = m.MenuId) left join Location l on (mp.LocationId = l.LocationId) left join InsReqMaster ir on mp.IR_Id = ir.IR_Id left join ItemMaster im on ir.OfferItem = im.ItemId where find_in_set('$empId', fa.EmpId) <> 0";
+
 // echo $pendingSql;
 
 $pendingQuery=mysqli_query($conn,$pendingSql);
 while($pendingRow = mysqli_fetch_assoc($pendingQuery)){
 	$pendingActId = $pendingRow["ActivityId"];
+	$sampleSize = $pendingRow["SampleSize"] == null ? "1" : $pendingRow["SampleSize"];
+	$productName = $pendingRow["ProductName"] == null ? "" : $pendingRow["ProductName"];
 
 	$fillActArr=array();
 	$firstObj = array(
@@ -263,10 +274,17 @@ while($pendingRow = mysqli_fetch_assoc($pendingQuery)){
 	if($GeoFence == null)
 		$GeoFence = $configGeoFence;
 
+	$moreCaption="";
+	$irId = $pendingRow["IR_Id"];
+	if($irId !=0){
+		$moreCaption .= " - IR ".$irId;
+	}
+
 	$pendingObj = new StdClass;
-	$pendingObj->irId = "0";
+	$pendingObj->irId = $irId;
 	if($cat != '' && $sub == '' && $caption == ''){
-		$pendingObj->Caption = $cat.' - '.$pendingActId;
+		$pendingObj->Caption = $cat.$moreCaption;
+		$pendingObj->productName = $productName;
 		$pendingObj->Icon = $iconArr[0];
 		$catColors = $colorsExplode[0];
 
@@ -276,7 +294,8 @@ while($pendingRow = mysqli_fetch_assoc($pendingQuery)){
 		$pendingObj->subCategoryList = array();
 	}
 	else if($cat !='' && $sub != '' && $caption == ''){
-		$pendingObj->Caption = $sub.' - '.$pendingActId;
+		$pendingObj->Caption = $sub.$moreCaption;
+		$pendingObj->productName = $productName;
 		$pendingObj->Icon = $iconArr[1];
 
 		$subCatColors = $colorsExplode[1];
@@ -285,7 +304,8 @@ while($pendingRow = mysqli_fetch_assoc($pendingQuery)){
 		$pendingObj->fontColor = $subCatColorsExplode[1];
 	}
 	else if($cat != '' && $sub != '' && $caption != ''){
-		$pendingObj->Caption = $caption.' - '.$pendingActId;
+		$pendingObj->Caption = $caption.$moreCaption;
+		$pendingObj->productName = $productName;
 		$pendingObj->Icon = $iconArr[2];
 
 		$captionColors = $colorsExplode[2];
@@ -293,7 +313,7 @@ while($pendingRow = mysqli_fetch_assoc($pendingQuery)){
 		$pendingObj->bgColor = $captionColorsExplode[0];
 		$pendingObj->fontColor = $captionColorsExplode[1];
 	}
-	$pendingObj->productName = "";
+	
 	$pendingObj->menuId = $pendingRow["MenuId"];
 	$pendingObj->locationId = $pendingRow["LocationId"];
 	$pendingObj->startDate = $pendingRow["StartDate"];
@@ -304,10 +324,12 @@ while($pendingRow = mysqli_fetch_assoc($pendingQuery)){
 	$pendingObj->GeoFence = $GeoFence ;
 	$pendingObj->GeoCoordinate = $GeoCoordinate ;
 	$pendingObj->activityId = $pendingActId;
-	$pendingObj->uniqueId = $pendingActId;
 	$pendingObj->status = $pendingRow["Status"];
-
+	$pendingObj->uniqueId = $pendingActId;
+	$pendingObj->sampleSize = $sampleSize;
+	$pendingObj->isDataSend = '';
 	getInfiniteLevelCheckpoints($fillActArr,$pendingObj);
+
 
 	array_push($wrappedListArray,$pendingObj);
 
@@ -347,16 +369,26 @@ function getInfiniteLevelCheckpoints($fillActArr,$pendingObj){
 		$filledCpString = str_replace(":",",",$flowChkId);
 
 		if($flowActId != 0){
-			$apFilledCpSql = "Select r2.*,r1.* 
+			// $apFilledCpSql = "Select r2.*,r1.* 
+			//  from
+			//  (Select d.ChkId,d.Value as answer from TransactionDTL d
+			//  where d.ActivityId = '$flowActId' and d.DependChkId = 0
+			//  )r1
+			//  right join 
+			//  (Select c.* from Checkpoints c
+			//  where c.CheckpointId in ($filledCpString)
+			//  ) r2 on (r1.ChkId = r2.CheckpointId)";
+			 // echo $apFilledCpSql;
+
+			 $apFilledCpSql = "Select r2.*,r1.* 
 			 from
-			 (Select d.ChkId,d.Value as answer from TransactionDTL d
+			 (Select d.SRNo,d.ChkId,d.Value as answer,d.SampleNo from TransactionDTL d
 			 where d.ActivityId = '$flowActId' and d.DependChkId = 0
 			 )r1
 			 right join 
 			 (Select c.* from Checkpoints c
 			 where c.CheckpointId in ($filledCpString)
-			 ) r2 on (r1.ChkId = r2.CheckpointId)";
-			 // echo $apFilledCpSql;
+			 ) r2 on (r1.ChkId = r2.CheckpointId) order by field(r1.ChkId, $filledCpString), r1.SampleNo";
 
 			$nLevelFilledQuery=mysqli_query($conn,$apFilledCpSql);
 			while($apfcp = mysqli_fetch_assoc($nLevelFilledQuery)){
@@ -369,14 +401,21 @@ function getInfiniteLevelCheckpoints($fillActArr,$pendingObj){
 				else{
 					$apfcpObj->value = "";
 				}
+				$apfcpObj->sampleNo=$apfcp["SampleNo"];
 				
 				$apfdpArray = array();
 				if($apfcp['Dependent'] == "1"){
+					// $apfdpSql = " Select r1.*,c.* from
+					// 				(Select d.ChkId,d.Value as answer from TransactionDTL d
+					// 				where d.ActivityId = '$flowActId' and d.DependChkId = (".$apfcp['CheckpointId'].")
+					// 				) r1
+					// 				join Checkpoints c on (r1.ChkId = c.CheckpointId)";
+
 					$apfdpSql = " Select r1.*,c.* from
-									(Select d.ChkId,d.Value as answer from TransactionDTL d
+									(Select d.SRNo,d.ChkId,d.Value as answer,d.SampleNo from TransactionDTL d
 									where d.ActivityId = '$flowActId' and d.DependChkId = (".$apfcp['CheckpointId'].")
 									) r1
-									join Checkpoints c on (r1.ChkId = c.CheckpointId)";
+									join Checkpoints c on (r1.ChkId = c.CheckpointId) order by r1.SRNo";
 									
 					$apfdpQuery = mysqli_query($conn,$apfdpSql);
 					while($apfdp = mysqli_fetch_assoc($apfdpQuery)){
@@ -384,6 +423,7 @@ function getInfiniteLevelCheckpoints($fillActArr,$pendingObj){
 						$apfdpObj->Chkp_Id = $apfcp['CheckpointId']."_".$apfdp['CheckpointId'];
 						$apfdpObj->editable = '0';
 						$apfdpObj->value = $apfdp['answer'];
+						$apfdpObj->sampleNo = $apfdp['SampleNo'];
 						array_push($apfdpArray,$apfdpObj);
 					}
 				}

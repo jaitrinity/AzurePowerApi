@@ -18,12 +18,12 @@ while($row = mysqli_fetch_assoc($query)){
 	array_push($menuArr,$menuId);
 }
 
-// $sql = "SELECT distinct `MenuId` FROM `FlowActivityMaster` WHERE find_in_set('$empId', `EmpId`) <> 0 ";
-// $query=mysqli_query($conn,$sql);
-// while($row = mysqli_fetch_assoc($query)){
-// 	$menuId = $row["MenuId"];
-// 	array_push($menuArr,$menuId);
-// }
+$sql = "SELECT distinct `MenuId` FROM `FlowActivityMaster` WHERE find_in_set('$empId', `EmpId`) <> 0 ";
+$query=mysqli_query($conn,$sql);
+while($row = mysqli_fetch_assoc($query)){
+	$menuId = $row["MenuId"];
+	array_push($menuArr,$menuId);
+}
 
 $roleSql = "SELECT distinct `MenuId` FROM `RoleMaster` WHERE `RoleId` = '$roleId' ";
 $roleQuery=mysqli_query($conn,$roleSql);
@@ -56,18 +56,18 @@ while($menuRow = mysqli_fetch_assoc($menuQuery)){
 		}
 }
 
-// $appSql = "SELECT DISTINCT `FlowCheckpointId` FROM `FlowActivityMaster` where `MenuId` in ($menuIds)";
-// $appQuery=mysqli_query($conn,$appSql);
-// while($appRow = mysqli_fetch_assoc($appQuery)){
-// 	$flowCheckpointId = $appRow["FlowCheckpointId"];
-// 	$flowCheckpointId = str_replace(":",",",$flowCheckpointId);
-// 	if($chkIdString == ""){
-// 		$chkIdString .= $flowCheckpointId;
-// 	}
-// 	else{
-// 		$chkIdString .= ",".$flowCheckpointId;
-// 	}
-// }
+$appSql = "SELECT DISTINCT `FlowCheckpointId` FROM `FlowActivityMaster` where `MenuId` in ($menuIds)";
+$appQuery=mysqli_query($conn,$appSql);
+while($appRow = mysqli_fetch_assoc($appQuery)){
+	$flowCheckpointId = $appRow["FlowCheckpointId"];
+	$flowCheckpointId = str_replace(":",",",$flowCheckpointId);
+	if($chkIdString == ""){
+		$chkIdString .= $flowCheckpointId;
+	}
+	else{
+		$chkIdString .= ",".$flowCheckpointId;
+	}
+}
 
 $rr=0;
 $responseArr = array();

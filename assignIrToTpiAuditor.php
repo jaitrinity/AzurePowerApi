@@ -14,11 +14,12 @@ $jsonData=json_decode($json);
 $loginEmpId = $jsonData->loginEmpId;
 $loginEmpRoleId = $jsonData->loginEmpRoleId;
 $irId = $jsonData->irId;
+$remark = $jsonData->remark;
 $tpiAuditorEmpId = $jsonData->tpiAuditorEmpId;
 
-$sql = "UPDATE `InsReqMaster` SET `Status`='IR_2', `TPI_Auditor`=? where `IR_Id`=? and `Status`='IR_1'";
+$sql = "UPDATE `InsReqMaster` SET `Status`='IR_2', `TPI_Auditor`=?, `TPI_Remark`=? where `IR_Id`=? and `Status`='IR_1'";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("ss", $tpiAuditorEmpId, $irId);
+$stmt->bind_param("sss", $tpiAuditorEmpId, $remark, $irId);
 if($stmt->execute()){
 	$updateRowCount = mysqli_affected_rows($conn);
 	if($updateRowCount == 0){

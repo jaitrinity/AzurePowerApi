@@ -30,7 +30,6 @@ $photograph = $jsonData->photograph;
 $photograph1 = $jsonData->photograph1;
 $photograph2 = $jsonData->photograph2;
 $photograph3 = $jsonData->photograph3;
-$qapGtp = $jsonData->qapGtp;
 $itemForIns = $jsonData->itemForIns;
 $insLocation = $jsonData->insLocation;
 $insDate = $jsonData->insDate;
@@ -66,8 +65,6 @@ if($oldIrId == ""){
 		$photograph2 = $base64->base64ToAny($photograph2,$poNo.'_Photograph2');
 	if($photograph3 !="")
 		$photograph3 = $base64->base64ToAny($photograph3,$poNo.'_Photograph3');
-	if($qapGtp !="")
-		$qapGtp = $base64->base64ToAny($qapGtp,$poNo.'_QAPnGTP');
 	$sampleSize=1;
 
 	// $samSql = "SELECT ss.SampleSize FROM LotSizeLogic ls join SampleSizeLogic ss on ls.$sampleCode = ss.SampleSizeCodeLetter where ls.LotSizeMin <= $lotNo and ls.LotSizeMax >= $lotNo";
@@ -84,14 +81,14 @@ if($oldIrId == ""){
 	$confRow = mysqli_fetch_assoc($confQuery);
 	$newIrId = $confRow["irCount"];	
 
-	$sql = "INSERT INTO `InsReqMaster`(`IR_Id`, `ProjectName`, `PO_No`, `PO_Date`, `LotNo`, `OfferItem`, `OfferQty`, `ReadinessReport`, `DimensionalReport`, `Photograph`, `Photograph1`, `Photograph2`, `Photograph3`, `QAPnGTP`, `ItemForInspection`, `InspectionLocation`, `InspectionDate`, `InspectionCloseDate`, `SampleSize`, `CreateBy`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	$sql = "INSERT INTO `InsReqMaster`(`IR_Id`, `ProjectName`, `PO_No`, `PO_Date`, `LotNo`, `OfferItem`, `OfferQty`, `ReadinessReport`, `DimensionalReport`, `Photograph`, `Photograph1`, `Photograph2`, `Photograph3`, `ItemForInspection`, `InspectionLocation`, `InspectionDate`, `InspectionCloseDate`, `SampleSize`, `CreateBy`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 	$stmt = $conn->prepare($sql);
-	$stmt->bind_param("ssssssssssssssssssis", $newIrId,$projectName,$poNo,$poDate,$lotNo,$offerItem,$offerQty,$readinessReport,$dimensionalReport,$photograph,$photograph1,$photograph2,$photograph3,$qapGtp,$itemForIns,$insLocation,$insDate,$insDate,$sampleSize,$loginEmpId);
+	$stmt->bind_param("sssssssssssssssssis", $newIrId,$projectName,$poNo,$poDate,$lotNo,$offerItem,$offerQty,$readinessReport,$dimensionalReport,$photograph,$photograph1,$photograph2,$photograph3,$itemForIns,$insLocation,$insDate,$insDate,$sampleSize,$loginEmpId);
 }
 else{
 	$newIrId = $oldIrId.'_1';
-	$sql = "INSERT INTO `InsReqMaster`(`IR_Id`, `ProjectName`, `PO_No`, `PO_Date`, `LotNo`, `OfferItem`, `OfferQty`, `ReadinessReport`, `DimensionalReport`, `Photograph`, `Photograph1`, `Photograph2`, `Photograph3`, `QAPnGTP`, `ItemForInspection`, `InspectionLocation`, `InspectionDate`, `InspectionCloseDate`, `SampleSize`, `CreateBy`) ";
-	$sql .= "SELECT '$newIrId' as `IR_Id`, `ProjectName`, `PO_No`, `PO_Date`, `LotNo`, `OfferItem`, `OfferQty`, `ReadinessReport`, `DimensionalReport`, `Photograph`, `Photograph1`, `Photograph2`, `Photograph3`, `QAPnGTP`, `ItemForInspection`, `InspectionLocation`, '$insDate' as `InspectionDate`, '$insDate' as `InspectionCloseDate`, `SampleSize`, `CreateBy` from `InsReqMaster` where `IR_Id`='$oldIrId'";
+	$sql = "INSERT INTO `InsReqMaster`(`IR_Id`, `ProjectName`, `PO_No`, `PO_Date`, `LotNo`, `OfferItem`, `OfferQty`, `ReadinessReport`, `DimensionalReport`, `Photograph`, `Photograph1`, `Photograph2`, `Photograph3`, `ItemForInspection`, `InspectionLocation`, `InspectionDate`, `InspectionCloseDate`, `SampleSize`, `CreateBy`) ";
+	$sql .= "SELECT '$newIrId' as `IR_Id`, `ProjectName`, `PO_No`, `PO_Date`, `LotNo`, `OfferItem`, `OfferQty`, `ReadinessReport`, `DimensionalReport`, `Photograph`, `Photograph1`, `Photograph2`, `Photograph3`, `ItemForInspection`, `InspectionLocation`, '$insDate' as `InspectionDate`, '$insDate' as `InspectionCloseDate`, `SampleSize`, `CreateBy` from `InsReqMaster` where `IR_Id`='$oldIrId'";
 	$stmt = $conn->prepare($sql);
 }
 
@@ -119,60 +116,6 @@ if($stmt->execute()){
 	$auditStmt = $conn->prepare($auditSql);
 	$auditStmt->bind_param("ssiss",$newIrId,$loginEmpId,$loginEmpRoleId,$status,$remark);
 	$auditStmt->execute();	
-
-	$allPhotoList = array();
-	if($photograph !="")
-		array_push($allPhotoList, $photograph);
-	if($photograph1 !="")
-		array_push($allPhotoList, $photograph1);
-	if($photograph2 !="")
-		array_push($allPhotoList, $photograph2);
-	if($photograph3 !="")
-		array_push($allPhotoList, $photograph3);
-
-	$allPhotoUrl = implode(",", $allPhotoList);
-
-	$irChkList = array();
-	$irChkJson = array('chkpId' => 1, 'value' => $projectName);
-	array_push($irChkList, $irChkJson);
-
-	$irChkJson = array('chkpId' => 11, 'value' => $insDate);
-	array_push($irChkList, $irChkJson);
-
-	$irChkJson = array('chkpId' => 2, 'value' => $poNo);
-	array_push($irChkList, $irChkJson);
-
-	$irChkJson = array('chkpId' => 4, 'value' => $offerItem);
-	array_push($irChkList, $irChkJson);
-
-	$irChkJson = array('chkpId' => 5, 'value' => $offerQty);
-	array_push($irChkList, $irChkJson);
-
-	$irChkJson = array('chkpId' => 10, 'value' => $insLocation);
-	array_push($irChkList, $irChkJson);
-
-	$irChkJson = array('chkpId' => 3, 'value' => $lotNo);
-	array_push($irChkList, $irChkJson);
-
-	$irChkJson = array('chkpId' => 6, 'value' => $readinessReport);
-	array_push($irChkList, $irChkJson);
-
-	$irChkJson = array('chkpId' => 7, 'value' => $dimensionalReport);
-	array_push($irChkList, $irChkJson);
-
-	$irChkJson = array('chkpId' => 8, 'value' => $allPhotoUrl);
-	array_push($irChkList, $irChkJson);
-
-	$saveIrJson = array(
-		'irId' => $newIrId, 'empId' => $loginEmpId, 'mId' => 1, 
-		'lId' => 1, 'event' => 'Submit', 'geolocation' => '0/0', 
-		'mobiledatetime' => '2024-04-23 12:05:33', 'timeStamp' => '1234567890', 
-		'checklist' => $irChkList, 'assignId' => '', 'activityId' => ''
-	);
-	require 'SaveIrCheckpointClass.php';
-	$saveIrClassObj = new SaveIrCheckpointClass();
-	$saveIrClassObj->saveIrCheckpoint($saveIrJson);
-
 }
 else{
 	$code = 0;

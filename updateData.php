@@ -85,6 +85,63 @@ else if($updateType == "inspectionDate"){
 	);
 	echo json_encode($output);
 }
+else if($updateType == "tpiAuditor"){
+	$irId = $jsonData->irId;
+	$newTpiAuditorId = $jsonData->newTpiAuditorId;
+
+	$sql="UPDATE `InsReqMaster` set `TPI_Auditor`='$newTpiAuditorId' where `IR_Id`='$irId'";
+	$stmt = $conn->prepare($sql);
+
+	if($stmt->execute()){
+		$code = 200;
+		$message = "IR TPI Auditor update";
+
+		$sql1="UPDATE `Mapping` set `EmpId`='$newTpiAuditorId' where `ActivityId`=0 and `IR_Id`='$irId'";
+		$stmt1 = $conn->prepare($sql1);
+		$stmt1->execute();
+	}
+	else{
+		$code = 0;
+		$message = "Something wrong";
+	}
+
+	$output = array(
+		'code' => $code, 
+		'message' => $message
+	);
+	echo json_encode($output);
+}
+else if($updateType == "portalColumn"){
+	$portalId = $jsonData->portalId;
+	$columns = $jsonData->columns;
+
+	$sql = "SELECT * FROM `PortalColumn` where `EmpId`='$loginEmpId' and `PortalId`=$portalId";
+	$query = mysqli_query($conn,$sql);
+	$rowCount = mysqli_num_rows($query);
+	if($rowCount == 0){
+		$sql = "INSERT INTO `PortalColumn`(`EmpId`, `PortalId`, `MenuColumns`) VALUES ('$loginEmpId',$portalId,'$columns')";
+	}
+	else{
+		$sql="UPDATE `PortalColumn` set `MenuColumns`='$columns' where `EmpId`='$loginEmpId' and `PortalId`=$portalId";
+	}
+	
+	$stmt = $conn->prepare($sql);
+
+	if($stmt->execute()){
+		$code = 200;
+		$message = "updated column";
+	}
+	else{
+		$code = 0;
+		$message = "Something wrong";
+	}
+
+	$output = array(
+		'code' => $code, 
+		'message' => $message
+	);
+	echo json_encode($output);
+}
 else{
 	$output = array(
 		'code' => 404, 
