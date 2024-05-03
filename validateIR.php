@@ -32,6 +32,34 @@ if($stmt->execute()){
 	$code = 200;
 	$message = "Status updated";
 
+	$tokens = "";
+	$tokenSql = "SELECT `Token` FROM `Devices` where `EmpId`='$tpiEmpId' and `Active`=1";
+	$tokenQuery = mysqli_query($conn,$tokenSql);
+	while($tokenRow = mysqli_fetch_assoc($tokenQuery)){
+		$devToken = $tokenRow["Token"];
+		if($tokens == ""){
+			$tokens .= $devToken;
+		}
+		else{
+			$tokens .= ",".$devToken;
+		}
+
+	}
+
+	if($tokens != ""){
+		require_once 'FirebaseNotificationClass.php';
+		$title = "New IR assign";
+		$body = "IR id ".$irId.' is assign to you, please do the needfull';
+		$image = "";
+		$link = "";
+		$classObj = new FirebaseNotificationClass();
+		$notiResult = $classObj->sendNotification($tokens, $title, $body, $image, $link);	
+
+		$insNoti = "INSERT INTO `Notification`(`EmpId`, `Subject`, `Body`, `NotiResponse`) VALUES ('$tpiEmpId','$title','$body','$notiResult')";
+		$notiStmt = $conn->prepare($insNoti);
+		$notiStmt->execute();
+	}
+
 	$updateRowCount = mysqli_affected_rows($conn);
 	if($updateRowCount == 0){
 		$code = 404;

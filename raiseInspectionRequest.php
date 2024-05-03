@@ -40,7 +40,7 @@ if($oldIrId == ""){
 	$empInfo = $classObj->getEmployeeInfo($loginEmpId);
 	$sampleCode = $empInfo["SampleType"];
 
-	$poSql = "SELECT * FROM `InsReqMaster` where `ProjectName`='$projectName' and `OfferItem`=$offerItem and `PO_No`='$poNo' and `Status` not in ('IR_100', 'IR_103')";
+	$poSql = "SELECT * FROM `InsReqMaster` where `ProjectName`='$projectName' and `OfferItem`=$offerItem and `PO_No`='$poNo' and `Status` not in ('IR_100','IR_103','IR_104','IR_105')";
 	$poQuery = mysqli_query($conn,$poSql);
 	$rowCount=mysqli_num_rows($poQuery);
 	if($rowCount !=0 ){
@@ -101,6 +101,79 @@ if($stmt->execute()){
 	$code = 200;
 	$message = "Successfully raise IR";
 
+	$mobileNotification = true;
+	$mailNotification = true;
+	if($mobileNotification){
+		$sqtEmpId = "";
+		$tokens = "";
+		$tokenSql = "SELECT e.EmpId, d.Token FROM Employees e join Devices d on e.EmpId=d.EmpId where e.RoleId=3 and e.IsActive=1";
+		$tokenQuery = mysqli_query($conn,$tokenSql);
+		while($tokenRow = mysqli_fetch_assoc($tokenQuery)){
+			$empId = $tokenRow["EmpId"];
+			$devToken = $tokenRow["Token"];
+			if($tokens == ""){
+				$tokens .= $devToken;
+				$sqtEmpId .= $empId;
+			}
+			else{
+				$tokens .= ",".$devToken;
+				$sqtEmpId .= ",".$empId;
+			}
+
+		}
+
+		if($tokens != ""){
+			require_once 'FirebaseNotificationClass.php';
+			$title = "New IR raise";
+			$body = "IR id ".$newIrId.' is raise by vendor, please do the needfull';
+			$image = "";
+			$link = "";
+			$classObj = new FirebaseNotificationClass();
+			$notiResult = $classObj->sendNotification($tokens, $title, $body, $image, $link);	
+
+			$insNoti = "INSERT INTO `Notification`(`EmpId`, `Subject`, `Body`, `NotiResponse`) VALUES ('$sqtEmpId','$title','$body','$notiResult')";
+			$notiStmt = $conn->prepare($insNoti);
+			$notiStmt->execute();
+		}
+	}
+	if($mailNotification){
+		$sqtEmpId = "";
+		$sqtEmailId = "";
+		// $tokenSql = "SELECT e.EmpId, e.EmailId FROM Employees e where e.EmpId='tr11' and e.RoleId=3 and e.IsActive=1";
+		$tokenSql = "SELECT e.EmpId, e.EmailId FROM Employees e where e.RoleId=3 and e.IsActive=1";
+		$tokenQuery = mysqli_query($conn,$tokenSql);
+		while($tokenRow = mysqli_fetch_assoc($tokenQuery)){
+			$empId = $tokenRow["EmpId"];
+			$emailId = $tokenRow["EmailId"];
+			if($tokens == ""){
+				$sqtEmailId .= $emailId;
+				$sqtEmpId .= $empId;
+			}
+			else{
+				$sqtEmailId .= ",".$emailId;
+				$sqtEmpId .= ",".$empId;
+			}
+
+		}
+
+		if($sqtEmailId != ""){
+			require_once 'SendMailClass.php';
+			$toMailId = $sqtEmailId;
+			$ccMailId = "";
+			$bccMailId = "";
+			$subject = "New IR raise";
+			$msg = "IR id ".$newIrId.' is raise by vendor, please do the needfull';
+			$classObj = new SendMailClass();
+			$emailResult = $classObj->sendMail($toMailId, $ccMailId, $bccMailId, $subject, $msg, null);	
+
+			// $insNoti = "INSERT INTO `Notification`(`EmpId`, `Subject`, `Body`, `NotiResponse`) VALUES ('$sqtEmpId','$subject','$msg','$emailResult')";
+			// $notiStmt = $conn->prepare($insNoti);
+			// $notiStmt->execute();
+		}
+	}
+
+		
+
 	if($oldIrId == ""){
 		$confUpdate="UPDATE `Configuration` SET `IR_Count`=$newIrId";
 		$confStmt = $conn->prepare($confUpdate);
@@ -120,17 +193,17 @@ if($stmt->execute()){
 	$auditStmt->bind_param("ssiss",$newIrId,$loginEmpId,$loginEmpRoleId,$status,$remark);
 	$auditStmt->execute();	
 
-	$allPhotoList = array();
-	if($photograph !="")
-		array_push($allPhotoList, $photograph);
-	if($photograph1 !="")
-		array_push($allPhotoList, $photograph1);
-	if($photograph2 !="")
-		array_push($allPhotoList, $photograph2);
-	if($photograph3 !="")
-		array_push($allPhotoList, $photograph3);
+	// $allPhotoList = array();
+	// if($photograph !="")
+	// 	array_push($allPhotoList, $photograph);
+	// if($photograph1 !="")
+	// 	array_push($allPhotoList, $photograph1);
+	// if($photograph2 !="")
+	// 	array_push($allPhotoList, $photograph2);
+	// if($photograph3 !="")
+	// 	array_push($allPhotoList, $photograph3);
 
-	$allPhotoUrl = implode(",", $allPhotoList);
+	// $allPhotoUrl = implode(",", $allPhotoList);
 
 	$irChkList = array();
 	$irChkJson = array('chkpId' => 1, 'value' => $projectName);
@@ -160,13 +233,31 @@ if($stmt->execute()){
 	$irChkJson = array('chkpId' => 7, 'value' => $dimensionalReport);
 	array_push($irChkList, $irChkJson);
 
-	$irChkJson = array('chkpId' => 8, 'value' => $allPhotoUrl);
+	$irChkJson = array('chkpId' => 1004, 'value' => $qapGtp);
 	array_push($irChkList, $irChkJson);
+
+	// $irChkJson = array('chkpId' => 8, 'value' => $allPhotoUrl);
+	// array_push($irChkList, $irChkJson);
+
+	$irChkJson = array('chkpId' => 8, 'value' => $photograph);
+	array_push($irChkList, $irChkJson);
+
+	$irChkJson = array('chkpId' => 1005, 'value' => $photograph1);
+	array_push($irChkList, $irChkJson);
+
+	$irChkJson = array('chkpId' => 1006, 'value' => $photograph2);
+	array_push($irChkList, $irChkJson);
+
+	$irChkJson = array('chkpId' => 1007, 'value' => $photograph3);
+	array_push($irChkList, $irChkJson);
+
+	$mobiledatetime = date('Y-m-d H:i:s', time());
+	$timeStamp = date('YmdHis', time());
 
 	$saveIrJson = array(
 		'irId' => $newIrId, 'empId' => $loginEmpId, 'mId' => 1, 
 		'lId' => 1, 'event' => 'Submit', 'geolocation' => '0/0', 
-		'mobiledatetime' => '2024-04-23 12:05:33', 'timeStamp' => '1234567890', 
+		'mobiledatetime' => $mobiledatetime, 'timeStamp' => $timeStamp, 
 		'checklist' => $irChkList, 'assignId' => '', 'activityId' => ''
 	);
 	require 'SaveIrCheckpointClass.php';

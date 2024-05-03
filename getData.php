@@ -76,10 +76,14 @@ else if($selectType == "inspectionRequest"){
 	echo json_encode($dataList);
 }
 else if($selectType == "employees"){
-	$sql = "SELECT e.Id as `id`, e.EmpId as `empId`, e.Name as `name`, e.Mobile as `mobile`, e.EmailId as `emailId`, e.Zone as `zone`, `CV` as `cv`, e.RoleId as `roleId`, r.Role as `role`, e.SpocPerson as `spocPerson`, e.SampleType as `sampleType`, e.IsActive as `isActive`, (case when e.IsActive=1 then 'Active' when e.IsActive=2 then 'Pending' when e.IsActive=3 then 'Rejected' else 'Deactive' end) as `activeStatus`, e.`ActionDate` as `actionDate`, e.`ActionRemark` as `actionRemark` FROM Employees e join RoleMaster r on e.RoleId = r.RoleId order by e.Id desc";
+	// $sql = "SELECT e.Id as `id`, e.EmpId as `empId`, e.Name as `name`, e.Mobile as `mobile`, e.EmailId as `emailId`, e.Zone as `zone`, `CV` as `cv`, e.RoleId as `roleId`, r.Role as `role`, e.SpocPerson as `spocPerson`, e.SampleType as `sampleType`, e.IsActive as `isActive`, (case when e.IsActive=1 then 'Active' when e.IsActive=2 then 'Pending' when e.IsActive=3 then 'Rejected' else 'Deactive' end) as `activeStatus`, e.`ActionDate` as `actionDate`, e.`ActionRemark` as `actionRemark` FROM Employees e join RoleMaster r on e.RoleId = r.RoleId order by e.Id desc";
+
+	$sql = "SELECT e.Id as `id`, e.EmpId as `empId`, (case when e.`RoleId` = 5 then e1.`Name` else e.`Name` end) as `name`, e.Mobile as `mobile`, e.EmailId as `emailId`, e1.`Name` as 'rmName', e.Zone as `zone`, e.`CV` as `cv`, e.RoleId as `roleId`, r.Role as `role`, e.SpocPerson as `spocPerson`, e.SampleType as `sampleType`, e.IsActive as `isActive`, (case when e.IsActive=1 then 'Active' when e.IsActive=2 then 'Pending' when e.IsActive=3 then 'Rejected' else 'Deactive' end) as `activeStatus`, e.`ActionDate` as `actionDate`, e.`ActionRemark` as `actionRemark`, e.`ItemName` as `itemName` FROM Employees e join RoleMaster r on e.RoleId = r.RoleId left join Employees e1 on e.RMId=e1.EmpId order by e.Id desc";
+
 	$query = mysqli_query($conn,$sql);
 	$dataList = array();
 	while ($row = mysqli_fetch_assoc($query)) {
+		unset($row["rmName"]);
 		array_push($dataList, $row);
 	}
 	echo json_encode($dataList);
@@ -90,7 +94,14 @@ else if($selectType == "tpiAuditor"){
 	if($recordType == ""){
 		$filterSql .= "and `IsActive`=1 ";
 	}
-	$sql = "SELECT `EmpId` as `empId`, `SpocPerson` as `name`, `Mobile` as `mobile`, `EmailId` as `emailId`, `DOB` as `dob`, `AadharNo` as `aadharNo`, `ProfilePic` as `profilePic`, `CV` as `cv`, (case when `IsActive`=1 then 'Active' when `IsActive`=2 then 'Pending' else 'Deactive' end) as `activeStatus` FROM `Employees` where 1=1 and `RMId`='$loginEmpId' and `RoleId`=5 $filterSql order by `Id` desc";
+	if($loginEmpRoleId == 1){
+
+	}
+	else{
+		$filterSql .= "and `RMId`='$loginEmpId' ";
+	}
+	
+	$sql = "SELECT `EmpId` as `empId`, `SpocPerson` as `name`, `Mobile` as `mobile`, `EmailId` as `emailId`, `DOB` as `dob`, `AadharNo` as `aadharNo`, `ProfilePic` as `profilePic`, `CV` as `cv`, (case when `IsActive`=1 then 'Active' when `IsActive`=2 then 'Pending' when `IsActive`=3 then 'Rejected' else 'Deactive' end) as `activeStatus`, `ActionRemark` as `actionRemark`, `ActionDate` as `actionDate` FROM `Employees` where 1=1 and `RoleId`=5 $filterSql order by `Id` desc";
 	$query = mysqli_query($conn,$sql);
 	$dataList = array();
 	while ($row = mysqli_fetch_assoc($query)) {
@@ -99,7 +110,7 @@ else if($selectType == "tpiAuditor"){
 	echo json_encode($dataList);
 }
 else if($selectType == "tpi"){
-	$sql = "SELECT `EmpId` as `empId`, `SpocPerson` as `name`, `Mobile` as `mobile`, `EmailId` as `emailId` FROM `Employees` where 1=1 and `RoleId`=4 and `IsActive`=1 order by `Id` desc";
+	$sql = "SELECT `EmpId` as `empId`, `Name` as `name`, `Mobile` as `mobile`, `EmailId` as `emailId` FROM `Employees` where 1=1 and `RoleId`=4 and `IsActive`=1 order by `Id` desc";
 	$query = mysqli_query($conn,$sql);
 	$dataList = array();
 	while ($row = mysqli_fetch_assoc($query)) {
@@ -122,7 +133,7 @@ else if($selectType == "scar"){
 	else if($loginEmpRoleId == 5){
 		$filterSql .= "and sm.VendorId='$loginEmpId' and sm.Action in (1,3,4) ";
 	}
-	$sql="SELECT sm.Id as `scarId`, sm.ActivityId as `activityId`, e.SpocPerson as `name`, a.MobileDateTime as `submitDate`, sm.Action as `status`, ss.StatusTxt as `statusTxt`, m.CheckpointId as `checkpointId`, sm.`Remark` as `remark` from ScarMaster sm join ScarStatus ss on sm.Action=ss.Action join Activity a on sm.ActivityId=a.ActivityId and a.Event='Submit' join Employees e on a.EmpId=e.EmpId join Menu m on a.MenuId=m.MenuId where 1=1 $filterSql ORDER by sm.Id desc";
+	$sql="SELECT sm.Id as `scarId`, sm.ActivityId as `activityId`, e.SpocPerson as `name`, a.MobileDateTime as `submitDate`, sm.Action as `status`, ss.StatusTxt as `statusTxt`, m.CheckpointId as `checkpointId`, sm.`Remark` as `sqtRemark`, `Remark1` as `vendorRemark` from ScarMaster sm join ScarStatus ss on sm.Action=ss.Action join Activity a on sm.ActivityId=a.ActivityId and a.Event='Submit' join Employees e on a.EmpId=e.EmpId join Menu m on a.MenuId=m.MenuId where 1=1 $filterSql ORDER by sm.Id desc";
 	// echo $sql;
 	$query = mysqli_query($conn,$sql);
 	$resultList = array();

@@ -10,8 +10,9 @@ $jsonData=json_decode($json);
 
 $empId=$jsonData->empId;
 $roleId=$jsonData->roleId;
+$defaultPic = "https://www.trinityapplab.in/AzurePower/api/files/default-pic.png";
 
-$sql = "SELECT e.EmpId as empId, e.Name as name, e.Mobile as mobile, e.EmailId as emailId, e.ProfilePic as profilePic, r.Role as role, e.IsActive as isActive FROM Employees e join RoleMaster r on e.RoleId=r.RoleId where e.EmpId='$empId' and e.RoleId='$roleId'";
+$sql = "SELECT e.EmpId as empId, e.SpocPerson as name, e.Mobile as mobile, e.EmailId as emailId, (case when e.ProfilePic is null or e.ProfilePic = '' then '$defaultPic' else e.ProfilePic end) as profilePic, r.Role as role, e.IsActive as isActive FROM Employees e join RoleMaster r on e.RoleId=r.RoleId where e.EmpId='$empId' and e.RoleId='$roleId'";
 $query = mysqli_query($conn,$sql);
 $rowCount = mysqli_num_rows($query);
 

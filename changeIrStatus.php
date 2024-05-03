@@ -34,9 +34,11 @@ $remark = $jsonData->remark;
 $mdccNo = $irId.'_'.rand(1000,9999);
 $moreUpdate="";
 if($beforeStatus == "IR_0"){
+	$moreUpdate .= ", `Remark`='$remark'";
 	$moreUpdate .= ", `TPI`='$tpiEmpId'";
 }
 else if($beforeStatus == "IR_1"){
+	$moreUpdate .= ", `TPI_Remark`='$remark'";
 	$moreUpdate .= ", `TPI_Auditor`='$tpiAuditorEmpId'";
 }
 else if($beforeStatus == "IR_3"){

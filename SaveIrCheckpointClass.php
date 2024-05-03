@@ -59,7 +59,7 @@ class SaveIrCheckpointClass{
 					$flowEmpId = $this->getFlowEmpId($empId, $roleId, $conn);
 					// echo $flowEmpId.'-1';
 					if($flowEmpId !=""){
-						$flowActSql = "INSERT INTO `FlowActivityMaster`(`ActivityId`,`MenuId`,`Status`,`AfterStatus`,`EmpId`,`FlowCheckpointId`) VALUES ($activityId,$mId,'$flowStatus','$afterStatus','$flowEmpId','$flowCheckpointId')";
+						$flowActSql = "INSERT INTO `FlowActivityMaster`(`ActivityId`,`MenuId`,`Status`,`AfterStatus`,`EmpId`,`FlowCheckpointId`,`IR_Id`) VALUES ($activityId,$mId,'$flowStatus','$afterStatus','$flowEmpId','$flowCheckpointId','$irId')";
 						// echo $flowActSql;
 						mysqli_query($conn,$flowActSql);
 					}

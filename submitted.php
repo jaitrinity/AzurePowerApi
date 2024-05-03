@@ -11,9 +11,9 @@ $empId=$jsonData->empId;
 $roleId=$jsonData->roleId;
 
 $submitList = array();
-// $submitSql = "SELECT DISTINCT `ActivityId` from `FlowActivityMaster` where `FlowEmpId` = '$empId'";
-// $submitSql .= "UNION SELECT DISTINCT `ActivityId` from `Activity` where `EmpId` = '$empId' and `Event` = 'Submit'";
-$submitSql = "SELECT DISTINCT `ActivityId` from `Activity` where `EmpId` = '$empId' and `Event` = 'Submit' order by `ActivityId` desc";
+$submitSql = "SELECT DISTINCT `ActivityId` from `FlowActivityMaster` where `FlowEmpId` = '$empId'";
+$submitSql .= "UNION SELECT DISTINCT `ActivityId` from `Activity` where `EmpId` = '$empId' and `Event` = 'Submit'";
+// $submitSql = "SELECT DISTINCT `ActivityId` from `Activity` where `EmpId` = '$empId' and `Event` = 'Submit' order by `ActivityId` desc";
 $submitQuery = mysqli_query($conn,$submitSql);
 $submitRowSize = mysqli_num_rows($submitQuery);
 if($submitRowSize != 0){
@@ -22,7 +22,7 @@ if($submitRowSize != 0){
 
 		$hisSql="SELECT m.Caption, m.SubCategory, m.Category, m.Icons, m.CheckpointId, l.Name as locationName, a.MobileDateTime as SubmitDateTime, a.GeoLocation, a.ActivityId, th.Status, ir.IR_Id, concat(im.ItemName,' - ',im.SubItemName) as ProductName, (case when m.SampleSize is null then ir.SampleSize else m.SampleSize end)  as `SampleSize` from Activity a 
 		join Menu m on (a.MenuId = m.MenuId) 
-		join TransactionHDR th on (a.ActivityId = th.ActivityId) 
+		left join TransactionHDR th on (a.ActivityId = th.ActivityId) 
 		join Location l on (a.LocationId = l.LocationId) 
 		left join Mapping mp on a.ActivityId=mp.ActivityId
 		left join InsReqMaster ir on mp.IR_Id = ir.IR_Id
@@ -77,15 +77,15 @@ if($submitRowSize != 0){
 		);
 		array_push($fillActArr, $firstObj);
 
-		// $fillSql="SELECT `FlowCheckpointId`, `FlowActivityId` FROM `FlowActivityMaster` where `ActivityId`=$actId and `FlowActivityId` is not null";
-		// $fillQuery=mysqli_query($conn,$fillSql);
-		// while($fillRow = mysqli_fetch_assoc($fillQuery)){
-		// 	$fillObj = array(
-		// 		'flowChkId' => $fillRow["FlowCheckpointId"],
-		// 		'flowActId' => $fillRow["FlowActivityId"]
-		// 	);
-		// 	array_push($fillActArr, $fillObj);
-		// }
+		$fillSql="SELECT `FlowCheckpointId`, `FlowActivityId` FROM `FlowActivityMaster` where `ActivityId`=$actId and `FlowActivityId` is not null";
+		$fillQuery=mysqli_query($conn,$fillSql);
+		while($fillRow = mysqli_fetch_assoc($fillQuery)){
+			$fillObj = array(
+				'flowChkId' => $fillRow["FlowCheckpointId"],
+				'flowActId' => $fillRow["FlowActivityId"]
+			);
+			array_push($fillActArr, $fillObj);
+		}
 
 		getInfiniteLevelCheckpoints($fillActArr,$submitObj);
 
@@ -125,7 +125,8 @@ function getInfiniteLevelCheckpoints($fillActArr,$submitObj){
 			$allChkId .= $flowChkId;
 		}
 		else{
-			$allChkId .= ":".$flowChkId;
+			// $allChkId .= ":".$flowChkId;
+			$allChkId .= ",".$flowChkId;
 		}
 		$filledCpString = str_replace(":",",",$flowChkId);
 

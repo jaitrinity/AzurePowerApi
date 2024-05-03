@@ -74,7 +74,7 @@ if($event == 'Submit'){
 	}
 	
 	if($checklist != null && count($checklist) != 0){
-		// for submit dashboard checklist
+
 		if($assignId == '0' && $actId == ''){
 			$insertMapping = "INSERT INTO `Mapping`(`EmpId`,`MenuId`,`LocationId`,`StartDate`,`EndDate`,`ActivityId`) values ('$empId','$mId','$lId',curdate(),curdate(),'$activityId') ";
 			mysqli_query($conn,$insertMapping);
@@ -85,20 +85,11 @@ if($event == 'Submit'){
 				$lastTransHdrId = $conn->insert_id;
 				$vendorId="";
 				$isAllMatOk="";
-				// $sum730=0;
-				// $sum732=0;
-				// $sum734=0;
-				// $sum736=0;
-				// $sum738=0;
-				// $sum740=0;
-				// $sum742=0;
-				// $sum1009=0;
-				// $sum1011=0;
-				// $sum1013=0;
 				for($ii=0;$ii<count($checklist);$ii++)
 				{
 					$chObj = $checklist[$ii];
 					$chkp_id = $chObj["Chkp_Id"];
+					// echo $chkp_id;
 					$valueList=$chObj["valueList"];
 					for($i=0;$i<count($valueList);$i++){
 						$valueObj = $valueList[$i];
@@ -108,22 +99,8 @@ if($event == 'Submit'){
 						$dependUpon = $valueObj["dependUpon"];
 						$dependChkId = ($dependUpon == null || $dependUpon == "") ? 0 : $dependUpon;
 
-
 						if($chkp_id == 434) $vendorId=$value;
 						else if($chkp_id == 435) $isAllMatOk=$value;
-
-						// if($mId == 109){
-						// 	if($chkp_id == 730) $sum730 += $value;
-						// 	else if($chkp_id == 732) $sum732 += $value;
-						// 	else if($chkp_id == 734) $sum734 += $value;
-						// 	else if($chkp_id == 736) $sum736 += $value;
-						// 	else if($chkp_id == 738) $sum738 += $value;
-						// 	else if($chkp_id == 740) $sum740 += $value;
-						// 	else if($chkp_id == 742) $sum742 += $value;
-						// 	else if($chkp_id == 1009) $sum1009 += $value;
-						// 	else if($chkp_id == 1013) $sum1013 += $value;
-						// }
-							
 
 						$insertInTransDtl="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES (?,?,?,?,?,?)";
 						$stmt = $conn->prepare($insertInTransDtl);
@@ -152,59 +129,6 @@ if($event == 'Submit'){
 				// 	}
 				// }
 
-				// if($mId == 109){
-				// 	$avg730=$sum730/10;
-				// 	$det730="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1016,'$avg730','$mobiledatetime',1,0)";
-
-				// 	$stmt730 = $conn->prepare($det730);
-				// 	$stmt730->execute();
-
-				// 	$avg732=$sum732/10;
-				// 	$det732="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1017,'$avg732','$mobiledatetime',1,0)";
-				// 	$stmt732 = $conn->prepare($det732);
-				// 	$stmt732->execute();
-
-				// 	$avg734=$sum734/10;
-				// 	$det734="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1018,'$avg734','$mobiledatetime',1,0)";
-				// 	$stmt734 = $conn->prepare($det734);
-				// 	$stmt734->execute();
-
-				// 	$avg736=$sum736/10;
-				// 	$det736="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1019,'$avg736','$mobiledatetime',1,0)";
-				// 	$stmt736 = $conn->prepare($det736);
-				// 	$stmt736->execute();
-
-				// 	$avg738=$sum738/10;
-				// 	$det738="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1020,'$avg738','$mobiledatetime',1,0)";
-				// 	$stmt738 = $conn->prepare($det738);
-				// 	$stmt738->execute();
-
-				// 	$avg740=$sum740/10;
-				// 	$det740="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1021,'$avg740','$mobiledatetime',1,0)";
-				// 	$stmt740 = $conn->prepare($det740);
-				// 	$stmt740->execute();
-
-				// 	$avg742=$sum742/10;
-				// 	$det742="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1022,'$avg742','$mobiledatetime',1,0)";
-				// 	$stmt742 = $conn->prepare($det742);
-				// 	$stmt742->execute();
-
-				// 	$avg1009=$sum1009/10;
-				// 	$det1009="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1023,'$avg1009','$mobiledatetime',1,0)";
-				// 	$stmt1009 = $conn->prepare($det1009);
-				// 	$stmt1009->execute();
-
-				// 	$avg1011=$sum1011/10;
-				// 	$det1011="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1024,'$avg1011','$mobiledatetime',1,0)";
-				// 	$stmt1011 = $conn->prepare($det1011);
-				// 	$stmt1011->execute();
-
-				// 	$avg1013=$sum1013/10;
-				// 	$det1013="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1025,'$avg1013','$mobiledatetime',1,0)";
-				// 	$stmt1013 = $conn->prepare($det1013);
-				// 	$stmt1013->execute();
-				// }
-
 				if($mId==2){
 					$venExp = explode(" --- ", $vendorId);
 					$scarSql="INSERT INTO `ScarMaster`(`ActivityId`, `VendorId`) VALUES ($activityId, '$venExp[0]')";
@@ -227,9 +151,7 @@ if($event == 'Submit'){
 				}
 			}
 		}
-		// for submit todo checklist
 		else{
-			// for fill first user in todo
 			if($actId == ''){
 				$insertInTransHdr="INSERT INTO `TransactionHDR` (`ActivityId`,`Status`) VALUES ('$activityId','Created')";
 				mysqli_query($conn,$insertInTransHdr);
@@ -251,19 +173,6 @@ if($event == 'Submit'){
 			}
 			
 			$lastTransHdrId = $activityId;	
-			$sum730=0;
-			$sum732=0;
-			$sum734=0;
-			$sum736=0;
-			$sum738=0;
-			$sum740=0;
-			$sum742=0;
-			$sum1009=0;
-			$sum1011=0;
-			$sum1013=0;
-			$sum843=0;
-			$sum977=0;
-			$sum647=0;
 			for($ii=0;$ii<count($checklist);$ii++)
 			{
 				$chObj = $checklist[$ii];
@@ -281,28 +190,6 @@ if($event == 'Submit'){
 					if($chkp_id == 745) $tpiId=$value;
 					else if($chkp_id == 725) $tpiRemark=$value;
 
-					if($mId == 109 || $mId == 86){
-						if($chkp_id == 730) $sum730 += $value;
-						else if($chkp_id == 732) $sum732 += $value;
-						else if($chkp_id == 734) $sum734 += $value;
-						else if($chkp_id == 736) $sum736 += $value;
-						else if($chkp_id == 738) $sum738 += $value;
-						else if($chkp_id == 740) $sum740 += $value;
-						else if($chkp_id == 742) $sum742 += $value;
-						else if($chkp_id == 1009) $sum1009 += $value;
-						else if($chkp_id == 1011) $sum1011 += $value;
-						else if($chkp_id == 1013) $sum1013 += $value;
-					}
-					else if($mId == 122){
-						if($chkp_id == 843) $sum843 += $value;
-					}
-					else if($mId == 131){
-						if($chkp_id == 977) $sum977 += $value;
-					}
-					else if($mId == 87){
-						if($chkp_id == 647) $sum647 += $value;
-					}
-
 					$insertInTransDtl="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES (?,?,?,?,?,?)";
 					$stmt = $conn->prepare($insertInTransDtl);
 					$stmt->bind_param("iissii", $activityId, $chkp_id, $value, $dateTime, $sampleNo, $dependChkId);
@@ -312,76 +199,6 @@ if($event == 'Submit'){
 						
 					}	
 				}	
-			}
-
-			if($mId == 109 || $mId == 86){
-				$avg730=$sum730/10;
-				$det730="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1016,'$avg730','$mobiledatetime',1,0)";
-				$stmt730 = $conn->prepare($det730);
-				$stmt730->execute();
-
-				$avg732=$sum732/10;
-				$det732="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1017,'$avg732','$mobiledatetime',1,0)";
-				$stmt732 = $conn->prepare($det732);
-				$stmt732->execute();
-
-				$avg734=$sum734/10;
-				$det734="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1018,'$avg734','$mobiledatetime',1,0)";
-				$stmt734 = $conn->prepare($det734);
-				$stmt734->execute();
-
-				$avg736=$sum736/10;
-				$det736="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1019,'$avg736','$mobiledatetime',1,0)";
-				$stmt736 = $conn->prepare($det736);
-				$stmt736->execute();
-
-				$avg738=$sum738/10;
-				$det738="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1020,'$avg738','$mobiledatetime',1,0)";
-				$stmt738 = $conn->prepare($det738);
-				$stmt738->execute();
-
-				$avg740=$sum740/10;
-				$det740="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1021,'$avg740','$mobiledatetime',1,0)";
-				$stmt740 = $conn->prepare($det740);
-				$stmt740->execute();
-
-				$avg742=$sum742/10;
-				$det742="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1022,'$avg742','$mobiledatetime',1,0)";
-				$stmt742 = $conn->prepare($det742);
-				$stmt742->execute();
-
-				$avg1009=$sum1009/10;
-				$det1009="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1023,'$avg1009','$mobiledatetime',1,0)";
-				$stmt1009 = $conn->prepare($det1009);
-				$stmt1009->execute();
-
-				$avg1011=$sum1011/10;
-				$det1011="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1024,'$avg1011','$mobiledatetime',1,0)";
-				$stmt1011 = $conn->prepare($det1011);
-				$stmt1011->execute();
-
-				$avg1013=$sum1013/10;
-				$det1013="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1025,'$avg1013','$mobiledatetime',1,0)";
-				$stmt1013 = $conn->prepare($det1013);
-				$stmt1013->execute();
-			}
-			else if($mId == 122){
-				$avg843=$sum843/10;
-				$det="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1026,'$avg843','$mobiledatetime',1,0)";
-				$stmt = $conn->prepare($det);
-				$stmt->execute();
-			}
-			else if($mId == 131){
-				$avg977=$sum977/10;
-				$det="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1026,'$avg977','$mobiledatetime',1,0)";
-				$stmt = $conn->prepare($det);
-				$stmt->execute();
-			}
-			else if($mId == 87){
-				$avg647=$sum647/10;
-				$det="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES ($activityId,1026,'$avg647','$mobiledatetime',1,0)";
-				$stmt = $conn->prepare($det);
-				$stmt->execute();
 			}
 		}	
 	}

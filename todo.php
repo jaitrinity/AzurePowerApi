@@ -25,7 +25,7 @@ $assignSql = "SELECT mp.MenuId,mp.LocationId,mp.StartDate,mp.EndDate,mp.MappingI
         left join InsReqMaster ir on mp.IR_Id = ir.IR_Id
         left join ItemMaster im on ir.OfferItem = im.ItemId 
 		WHERE mp.IsActive = 1 and mp.EmpId = '$empId' AND date(mp.StartDate) <= date(now()) AND date(mp.EndDate) >= date(now())
-		AND mp.ActivityId = 0 order by mp.CreateDate desc";
+		AND mp.ActivityId = 0 order by mp.MappingId";
 
 		// echo $assignSql;
 		
@@ -218,7 +218,7 @@ while($row = mysqli_fetch_assoc($assignQuery)){
 		// m.Category,m.SubCategory,m.Caption,m.Icons,m.CheckpointId,m.Colors,fa.FlowCheckpointId,h.Status FROM FlowActivityMaster fa join TransactionHDR h on fa.ActivityId = h.ActivityId and fa.Status = h.Status join Mapping mp on h.ActivityId = mp.ActivityId join Menu m on (mp.MenuId = m.MenuId) left join Location l on (mp.LocationId = l.LocationId) where find_in_set('$empId', fa.EmpId) <> 0";
 
 $pendingSql = "SELECT mp.ActivityId,mp.MenuId,mp.LocationId,l.Name,l.GeoCoordinates,mp.StartDate,mp.EndDate,
-		m.Category,m.SubCategory,m.Caption,m.Icons,m.CheckpointId,m.Colors,fa.FlowCheckpointId,h.Status,mp.IR_Id, (case when m.SampleSize is not null then m.SampleSize else ir.SampleSize end) as SampleSize, concat(im.ItemName,' - ',im.SubItemName) as ProductName FROM FlowActivityMaster fa join TransactionHDR h on fa.ActivityId = h.ActivityId and fa.Status = h.Status join Mapping mp on h.ActivityId = mp.ActivityId join Menu m on (mp.MenuId = m.MenuId) left join Location l on (mp.LocationId = l.LocationId) left join InsReqMaster ir on mp.IR_Id = ir.IR_Id left join ItemMaster im on ir.OfferItem = im.ItemId where find_in_set('$empId', fa.EmpId) <> 0";
+		m.Category,m.SubCategory,m.Caption,m.Icons,m.CheckpointId,m.Colors,fa.FlowCheckpointId,h.Status,mp.IR_Id, (case when m.SampleSize is not null then m.SampleSize else ir.SampleSize end) as SampleSize, concat(im.ItemName,' - ',im.SubItemName) as ProductName FROM FlowActivityMaster fa join TransactionHDR h on fa.ActivityId = h.ActivityId and fa.Status = h.Status join Mapping mp on h.ActivityId = mp.ActivityId and mp.IsActive=1 join Menu m on (mp.MenuId = m.MenuId) left join Location l on (mp.LocationId = l.LocationId) left join InsReqMaster ir on mp.IR_Id = ir.IR_Id left join ItemMaster im on ir.OfferItem = im.ItemId where find_in_set('$empId', fa.EmpId) <> 0 and fa.FlowActivityId is null";
 
 // echo $pendingSql;
 
@@ -348,6 +348,8 @@ $output=array(
 	'todo'=>$wrappedListArray
 );
 echo json_encode($output);
+
+// file_put_contents('/var/www/trinityapplab.in/html/AzurePower/api/log/todo_'.date("Y-m-d").'.log', date("Y-m-d H:i:s").' '.json_encode($output)."\n", FILE_APPEND);
 ?>
 
 <?php
@@ -441,6 +443,7 @@ function getInfiniteLevelCheckpoints($fillActArr,$pendingObj){
 				$apcpObj->Chkp_Id = $apcp['CheckpointId'];
 				$apcpObj->editable = $apcp['Editable'];
 				$apcpObj->value = "";
+				$apcpObj->sampleNo = $apcp['SampleSize'];
 				$apdpArray = array();
 				if($apcp['Dependent'] == "1"){
 					$apcplogicArray = explode(":",trim($apcp['Logic']," "));
@@ -463,6 +466,7 @@ function getInfiniteLevelCheckpoints($fillActArr,$pendingObj){
 						$apdpObj->Chkp_Id = $apdp['CheckpointId'];
 						$apdpObj->editable = $apdp['Editable'];
 						$apdpObj->value = "";
+						$apcpObj->sampleNo = $apdp['SampleSize'];
 						array_push($apdpArray,$apdpObj);
 					}
 				}

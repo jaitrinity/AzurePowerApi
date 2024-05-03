@@ -14,7 +14,7 @@ $jsonData=json_decode($json);
 $loginEmpId = $jsonData->loginEmpId;
 $loginEmpRoleId = $jsonData->loginEmpRoleId;
 $irId = $jsonData->irId;
-$remark = $jsonData->remark;
+$remark = $jsonData->remarks;
 $tpiAuditorEmpId = $jsonData->tpiAuditorEmpId;
 
 $sql = "UPDATE `InsReqMaster` SET `Status`='IR_2', `TPI_Auditor`=?, `TPI_Remark`=? where `IR_Id`=? and `Status`='IR_1'";
@@ -35,6 +35,35 @@ if($stmt->execute()){
 
 	$code = 200;
 	$message = "Status updated";
+
+	$tokens = "";
+	$tokenSql = "SELECT `Token` FROM `Devices` where `EmpId`='$tpiAuditorEmpId' and `Active`=1";
+	$tokenQuery = mysqli_query($conn,$tokenSql);
+	while($tokenRow = mysqli_fetch_assoc($tokenQuery)){
+		$devToken = $tokenRow["Token"];
+		if($tokens == ""){
+			$tokens .= $devToken;
+		}
+		else{
+			$tokens .= ",".$devToken;
+		}
+
+	}
+
+	if($tokens != ""){
+		require_once 'FirebaseNotificationClass.php';
+		$title = "New IR assign";
+		$body = "IR id ".$irId.' is assign to you, please do the needfull';
+		$image = "";
+		$link = "";
+		$classObj = new FirebaseNotificationClass();
+		$notiResult = $classObj->sendNotification($tokens, $title, $body, $image, $link);	
+
+		$insNoti = "INSERT INTO `Notification`(`EmpId`, `Subject`, `Body`, `NotiResponse`) VALUES ('$tpiAuditorEmpId','$title','$body','$notiResult')";
+		$notiStmt = $conn->prepare($insNoti);
+		$notiStmt->execute();
+	}
+	
 
 	// $irSql = "SELECT im.ItemId, im.ItemName, ir.OfferQty, im.Logic, ir.InspectionDate FROM InsReqMaster ir join ItemMaster im on ir.OfferItem=im.ItemId where ir.IR_Id=$irId";
 	// $irQuery = mysqli_query($conn,$irSql);
