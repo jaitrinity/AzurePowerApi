@@ -9,8 +9,8 @@ class SendMailClass{
 	    $mail->isSMTP();                                      
 	    $mail->Host = 'smtp.gmail.com';
 	    $mail->SMTPAuth = true;
-	    $mail->Username = 'communication@trinityapplab.co.in';
-	    $mail->Password = 'communication@Trinity';   
+	    $mail->Username = 'emailId';
+	    $mail->Password = 'password';   
 	    $mail->Port = 587;
 	    $mail->SMTPSecure = 'tls';
 	    
@@ -71,8 +71,8 @@ class SendMailClass{
 	    $mail->isSMTP();                                      
 	    $mail->Host = 'smtp.gmail.com';
 	    $mail->SMTPAuth = true;
-	    $mail->Username = 'communication@trinityapplab.co.in';
-	    $mail->Password = 'communication@Trinity';   
+	    $mail->Username = 'emailId';
+	    $mail->Password = 'password';   
 	    $mail->Port = 587;
 	    $mail->SMTPSecure = 'tls';
 	    
