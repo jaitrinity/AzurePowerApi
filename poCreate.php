@@ -17,7 +17,9 @@ $projectId = $jsonData->projectId;
 $poNo = $jsonData->poNo;
 $poDate = $jsonData->poDate;
 $noOfItem = $jsonData->noOfItem;
+$poAttachment = $jsonData->poAttachment;
 $itemList = $jsonData->itemList;
+
 $sql="SELECT * FROM `PO_Master` where `PO_No`='$poNo'";
 $query=mysqli_query($conn,$sql);
 $rowCount=mysqli_num_rows($query);
@@ -30,9 +32,15 @@ if($rowCount !=0){
 	return;
 }
 
-$sql = "INSERT INTO `PO_Master`(`ProjectId`, `PO_No`, `PO_Date`, `NoOfItems`, `CreateBy`) VALUES (?,?,?,?,?)";
+if($poAttachment !=null && $poAttachment !=""){
+	require 'Base64ToAnyClass.php';
+	$base64 = new Base64ToAnyClass();
+	$poAttachment = $base64->base64ToAny($poAttachment,$poNo.'_PO_Attachment');
+}
+
+$sql = "INSERT INTO `PO_Master`(`ProjectId`, `PO_No`, `PO_Date`, `NoOfItems`, `PO_Attachment`, `CreateBy`) VALUES (?,?,?,?,?,?)";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("issss",$projectId, $poNo, $poDate, $noOfItem, $loginEmpId);
+$stmt->bind_param("isssss",$projectId, $poNo, $poDate, $noOfItem, $poAttachment, $loginEmpId);
 if($stmt->execute()){
 	
 	$dataList = array();

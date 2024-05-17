@@ -133,7 +133,7 @@ else if($selectType == "scar"){
 	else if($loginEmpRoleId == 5){
 		$filterSql .= "and sm.VendorId='$loginEmpId' and sm.Action in (1,3,4) ";
 	}
-	$sql="SELECT sm.Id as `scarId`, sm.ActivityId as `activityId`, e.SpocPerson as `name`, a.MobileDateTime as `submitDate`, sm.Action as `status`, ss.StatusTxt as `statusTxt`, m.CheckpointId as `checkpointId`, sm.`Remark` as `sqtRemark`, `Remark1` as `vendorRemark` from ScarMaster sm join ScarStatus ss on sm.Action=ss.Action join Activity a on sm.ActivityId=a.ActivityId and a.Event='Submit' join Employees e on a.EmpId=e.EmpId join Menu m on a.MenuId=m.MenuId where 1=1 $filterSql ORDER by sm.Id desc";
+	$sql="SELECT sm.Id as `scarId`, sm.ActivityId as `activityId`, sm.IR_Id as `irId`, e.SpocPerson as `name`, a.MobileDateTime as `submitDate`, sm.Action as `status`, ss.StatusTxt as `statusTxt`, m.CheckpointId as `checkpointId`, sm.Remark as `sqtRemark`, sm.ActionDate as `sqtActionDate`, sm.Remark1 as `vendorRemark`, sm.ActionDate1 as `vendorActionDate`, ir.ProjectName as `projectName`, ir.InspectionDate as `inspectionDate`, ir.LotNo as `lotNo` from ScarMaster sm join ScarStatus ss on sm.Action=ss.Action join Activity a on sm.ActivityId=a.ActivityId and a.Event='Submit' join Employees e on a.EmpId=e.EmpId join Menu m on a.MenuId=m.MenuId left join InsReqMaster ir on sm.IR_Id = ir.IR_Id where 1=1 $filterSql ORDER by sm.Id desc";
 	// echo $sql;
 	$query = mysqli_query($conn,$sql);
 	$resultList = array();
@@ -148,7 +148,7 @@ else if($selectType == "scar"){
 		}
 
 		$row["dataList"] = $dataList;
-
+		unset($row["checkpointId"]);
 		array_push($resultList, $row);
 	}
 	echo json_encode($resultList);
@@ -168,7 +168,7 @@ else if($selectType == "mrn"){
 	else if($loginEmpRoleId == 5){
 		$filterSql .= "and mrn.VendorId='$loginEmpId' and mrn.Action in (1,3,4) ";
 	}
-	$sql="SELECT mrn.Id as `mrnId`, mrn.ActivityId as `activityId`, e.SpocPerson as `name`, ms.StatusTxt as `statusTxt`, a.MobileDateTime as `submitDate`, m.CheckpointId as `checkpointId` from MrnMaster mrn join MrnStatus ms on mrn.Action = ms.Action join Activity a on mrn.ActivityId=a.ActivityId and a.Event='Submit' join Employees e on a.EmpId=e.EmpId join Menu m on a.MenuId=m.MenuId where 1=1 $filterSql ORDER by mrn.Id desc";
+	$sql="SELECT mrn.Id as `mrnId`, mrn.IR_Id as `irId`, mrn.ActivityId as `activityId`, e.SpocPerson as `name`, ms.StatusTxt as `statusTxt`, a.MobileDateTime as `submitDate`, m.CheckpointId as `checkpointId`, ir.ProjectName as `projectName`, ir.InspectionDate as `inspectionDate`, ir.LotNo as `lotNo` from MrnMaster mrn join MrnStatus ms on mrn.Action = ms.Action join Activity a on mrn.ActivityId=a.ActivityId and a.Event='Submit' join Employees e on a.EmpId=e.EmpId join Menu m on a.MenuId=m.MenuId left join InsReqMaster ir on mrn.IR_Id = ir.IR_Id where 1=1 $filterSql ORDER by mrn.Id desc";
 	// echo $sql;
 	$query = mysqli_query($conn,$sql);
 	$resultList = array();
@@ -184,7 +184,7 @@ else if($selectType == "mrn"){
 
 		// $row["dataList"] = $dataList;
 
-		$dataJson = array('mrnId' => $row["mrnId"], 'name' => $row["name"], 'statusTxt' => $row["statusTxt"], 'submitDate' => $row["submitDate"], 'dataList' => $dataList);
+		$dataJson = array('mrnId' => $row["mrnId"], 'irId' => $row["irId"], 'name' => $row["name"], 'statusTxt' => $row["statusTxt"], 'submitDate' => $row["submitDate"], 'projectName' => $row["projectName"], 'inspectionDate' => $row["inspectionDate"], 'lotNo' => $row["lotNo"], 'dataList' => $dataList);
 		array_push($resultList, $dataJson);
 	}
 	echo json_encode($resultList);
@@ -195,7 +195,8 @@ else if($selectType == "travelExpense"){
 	if($recordType == "pending"){
 		$filterSql .= "and sm.Action=0 ";
 	}
-	$sql="SELECT sm.Id as `expenseId`, sm.ActivityId as `activityId`, e.SpocPerson as `name`, a.MobileDateTime as `submitDate`, sm.Action as `status`, (case when sm.Action=0 then 'Pending' when sm.Action=1 then 'Approved' else 'Rejected' end) as `statusTxt`, m.CheckpointId as `checkpointId`, sm.Remark as `remark` from ExpenseMaster sm join Activity a on sm.ActivityId=a.ActivityId and a.Event='Submit' join Employees e on a.EmpId=e.EmpId join Menu m on a.MenuId=m.MenuId where 1=1 $filterSql ORDER by sm.Id desc";
+	// $sql="SELECT sm.Id as `expenseId`, sm.ActivityId as `activityId`, sm.IR_Id as `irId`, e.SpocPerson as `name`, a.MobileDateTime as `submitDate`, sm.Action as `status`, (case when sm.Action=0 then 'Pending' when sm.Action=1 then 'Approved' else 'Rejected' end) as `statusTxt`, m.CheckpointId as `checkpointId`, sm.Remark as `remark`, sm.ActionDate as actionDate from ExpenseMaster sm join Activity a on sm.ActivityId=a.ActivityId and a.Event='Submit' join Employees e on a.EmpId=e.EmpId join Menu m on a.MenuId=m.MenuId where 1=1 $filterSql ORDER by sm.Id desc";
+	$sql = "SELECT sm.Id as `expenseId`, sm.ActivityId as `activityId`, sm.IR_Id as `irId`, e.SpocPerson as `name`, a.MobileDateTime as `submitDate`, sm.Action as `status`, (case when sm.Action=0 then 'Pending' when sm.Action=1 then 'Approved' else 'Rejected' end) as `statusTxt`, m.CheckpointId as `checkpointId`, sm.Remark as `remark`, sm.ActionDate as actionDate, ir.ProjectName as projectName, ir.InspectionDate as inspectionDate, ir.LotNo as lotNo from ExpenseMaster sm join Activity a on sm.ActivityId=a.ActivityId and a.Event='Submit' join Employees e on a.EmpId=e.EmpId join Menu m on a.MenuId=m.MenuId left join InsReqMaster ir on sm.IR_Id = ir.IR_Id where 1=1 $filterSql ORDER by sm.Id desc";
 	$query = mysqli_query($conn,$sql);
 	$resultList = array();
 	while ($row = mysqli_fetch_assoc($query)) {
@@ -210,6 +211,7 @@ else if($selectType == "travelExpense"){
 
 		$row["dataList"] = $dataList;
 
+		unset($row["checkpointId"]);
 		array_push($resultList, $row);
 	}
 	echo json_encode($resultList);
@@ -231,7 +233,10 @@ else if($selectType == "portalMenu"){
 	echo json_encode($dataList);
 }
 else if($selectType == "project"){
-	$sql = "SELECT `Id` as `id`, `ProjectName` as `projectName`, `CreateDate` as createDate, (case when `IsActive`=0 then 'Disabled' when `IsActive`=1 then 'Enabled' end) as `status` FROM `ProjectMaster` order by `Id` desc ";
+	// $sql = "SELECT `Id` as `id`, `ProjectName` as `projectName`, `CreateDate` as createDate, (case when `IsActive`=0 then 'Disabled' when `IsActive`=1 then 'Enabled' end) as `status` FROM `ProjectMaster` order by `Id` desc ";
+	// $sql = "SELECT `Id` as `id`, `ProjectName` as `projectName`, `Capacity` as `capacity`, `SPV_Name` as `spvName`, `Address` as `address`, `CreateDate` as createDate, (case when `IsActive`=0 then 'Disabled' when `IsActive`=1 then 'Enabled' end) as `status` FROM `ProjectMaster` order by `IsActive` desc ";
+	$sql = "SELECT pm.Id as `id`, pm.ProjectName as `projectName`, pm.Capacity as `capacity`, pm.SPV_Name as `spvName`, pm.Address as `address`, e.SpocPerson as ctName, e1.SpocPerson as sqName, pm.CreateDate as createDate, (case when pm.IsActive=0 then 'Disabled' when pm.IsActive=1 then 'Enabled' end) as `status` FROM ProjectMaster pm left join Employees e on pm.CT_EmpId=e.EmpId left join Employees e1 on pm.SQ_EmpId=e1.EmpId order by pm.IsActive desc ";
+
 	$query = mysqli_query($conn,$sql);
 	$dataList = array();
 	while ($row = mysqli_fetch_assoc($query)) {
@@ -252,6 +257,7 @@ else if($selectType == "po"){
 		$id = $row["Id"];
 		$poNo = $row["PO_No"];
 		$poDate = $row["PO_Date"];
+		$poAttachment = $row["PO_Attachment"];
 		$noOfItems = $row["NoOfItems"];
 
 		$poItemList = array();
@@ -262,7 +268,8 @@ else if($selectType == "po"){
 		}
 
 		$poJson = array(
-			'id' => $id, 'poNo' => $poNo, 'poDate' => $poDate, 'noOfItems' => $noOfItems,
+			'id' => $id, 'poNo' => $poNo, 'poDate' => $poDate, 'poAttachment' => $poAttachment, 
+			'noOfItems' => $noOfItems,
 			'poItemList' => $poItemList
 		);
 		array_push($poList, $poJson);
@@ -270,18 +277,32 @@ else if($selectType == "po"){
 	echo json_encode($poList);
 }
 else if($selectType == "mdcc"){
-	$sql = "SELECT `IR_Id` as irId, `MDCC_No` as mdccNo, `OfferQty` as offerQty, `DeliveredQty` as deliveredQty, `RemainingQty` as remainingQty FROM `IR_MDCC` order by `Id` desc ";
+	$filterSql = "";
+	if($loginEmpRoleId != 1){
+		$filterSql .= "and pm.CT_EmpId='$loginEmpId'";
+	}
+	// $sql = "SELECT `IR_Id` as irId, `MDCC_No` as mdccNo, `OfferQty` as offerQty, `DeliveredQty` as deliveredQty, `RemainingQty` as remainingQty FROM `IR_MDCC` order by `Id` desc ";
+	$sql = "SELECT md.IR_Id as irId, md.MDCC_No as mdccNo, ir.LotNo as lotNo, e.Name as vendorName, ir.ProjectName as projectName, pm.Address as siteAddress, ir.PO_No as poNo, im.SubItemName as itemDescription, md.OfferQty as offerQty, md.DeliveredQty as deliveredQty, md.RemainingQty as remainingQty, date_format(md.CreateDate,'%d-%m-%Y') as mdccDate FROM IR_MDCC md join InsReqMaster ir on md.IR_Id=ir.IR_Id join Employees e on ir.CreateBy=e.EmpId join ProjectMaster pm on ir.ProjectName=pm.ProjectName $filterSql join ItemMaster im on ir.OfferItem=im.ItemId order by md.Id desc";
 	$query = mysqli_query($conn,$sql);
 	$dataList = array();
 	while ($row = mysqli_fetch_assoc($query)) {
 		$mdccNo = $row["mdccNo"];
 		$diList = array();
-		$diSql = "SELECT `Id` as `id`, `DeliverQty` as `deliverQty`, `DeliverDate` as `deliverDate` FROM `MDCC_DI` where `MDCC_No`='$mdccNo'";
+		$diSql = "SELECT `Id` as `id`, `DI_No` as `diNo`, `DeliverQty` as `deliverQty`, `DeliverDate` as `deliverDate`, `Remark` as `remark`, date(`CreateDate`) as `diDate` FROM `MDCC_DI` where `MDCC_No`='$mdccNo'";
 		$diQuery = mysqli_query($conn,$diSql);
 		while ($diRow = mysqli_fetch_assoc($diQuery)) {
 			array_push($diList, $diRow);
 		}
 		$row["diList"] = $diList;
+		array_push($dataList, $row);
+	}
+	echo json_encode($dataList);
+}
+else if($selectType == "mdccDi"){
+	$sql = "SELECT `DI_No` as `diNo`, `MDCC_No` as `mdccNo`, `IR_Id` as `irId`, `LotNo` as `lotNo`, `ProjectName` as `projectName`, `SiteAddress` as `siteAddress`, `PO_No` as `poNo`, `MatDesc` as `matDesc`, `DeliverQty` as `qty`, `DeliverDate` as `deliverDate`, `Remark` as `remark`, `Status` as `status`, `StatusTxt` as `statusTxt` FROM `V_MDCC_DI` where `VendorId` = '$loginEmpId'";
+	$query = mysqli_query($conn,$sql);
+	$dataList = array();
+	while ($row = mysqli_fetch_assoc($query)) {
 		array_push($dataList, $row);
 	}
 	echo json_encode($dataList);

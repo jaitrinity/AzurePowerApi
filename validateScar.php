@@ -16,6 +16,14 @@ $scarId = $jsonData->scarId;
 $activityId = $jsonData->activityId;
 $status = $jsonData->status;
 $remark = $jsonData->remark;
+$rejectReason = $jsonData->rejectReason;
+$probDesc = $jsonData->probDesc;
+$defectPhoto = $jsonData->defectPhoto;
+$immeCorrecDet = $jsonData->immeCorrecDet;
+$defineAndVerifyRootCause = $jsonData->defineAndVerifyRootCause;
+$defineAndVerifyRootCauseDoc = $jsonData->defineAndVerifyRootCauseDoc;
+$correctiveActions = $jsonData->correctiveActions;
+$targetDate = $jsonData->targetDate;
 
 // SQT
 if($status == "Approve" && $loginEmpRoleId == 3){
@@ -24,21 +32,44 @@ if($status == "Approve" && $loginEmpRoleId == 3){
 	$stmt->bind_param("si", $remark,$scarId);
 }
 else if($status == "Reject" && $loginEmpRoleId == 3){
-	$sql = "UPDATE `ScarMaster` SET `Action`=2, `Remark`=?, `ActionDate`=current_timestamp where `Id`=? and `Action`=0";
+	$sql = "UPDATE `ScarMaster` SET `Action`=2, `Remark`=?, `RejectReason`='$rejectReason', `ActionDate`=current_timestamp where `Id`=? and `Action`=0";
 	$stmt = $conn->prepare($sql);
 	$stmt->bind_param("si", $remark,$scarId);
 }
 // Vendor
-else if($status == "Approve" && $loginEmpRoleId == 5){
-	$sql = "UPDATE `ScarMaster` SET `Action`=3, `Remark1`=?, `ActionDate1`=current_timestamp where `Id`=? and `Action`=1";
+else if($status == "Submit" && $loginEmpRoleId == 5){
+
+	$moreUpdate = "";
+
+	require 'Base64ToAnyClass.php';
+	$base64 = new Base64ToAnyClass();
+	if($defectPhoto !=""){
+		$defectPhoto = $base64->base64ToAny($defectPhoto,$irId.'_DefectPhoto');
+		$moreUpdate .= ", `DefectPhoto`='$defectPhoto'";
+	}
+	if($defineAndVerifyRootCauseDoc != ""){
+		$defineAndVerifyRootCauseDoc = $base64->base64ToAny($defineAndVerifyRootCauseDoc,$irId.'_DefectPhoto');
+		$moreUpdate .= ", `DefineAndVerifyRootCauseDoc`='$defineAndVerifyRootCauseDoc'";
+	}
+
+	$moreUpdate .= ", `ProbDesc`='$probDesc', `ImmeCorrecDet`='$immeCorrecDet', `DefineAndVerifyRootCause`='$defineAndVerifyRootCause', `CorrectiveActions`='$correctiveActions', `TargetDate`='$targetDate'";
+
+	$sql = "UPDATE `ScarMaster` SET `Action`=3, `Remark1`=?, `ActionDate1`=current_timestamp $moreUpdate where `Id`=? and `Action`=1";
 	$stmt = $conn->prepare($sql);
 	$stmt->bind_param("si", $remark,$scarId);
 }
-else if($status == "Reject" && $loginEmpRoleId == 5){
-	$sql = "UPDATE `ScarMaster` SET `Action`=4, `Remark1`=?, `ActionDate1`=current_timestamp where `Id`=? and `Action`=1";
+// else if($status == "Reject" && $loginEmpRoleId == 5){
+// 	$sql = "UPDATE `ScarMaster` SET `Action`=4, `Remark1`=?, `ActionDate1`=current_timestamp where `Id`=? and `Action`=1";
+// 	$stmt = $conn->prepare($sql);
+// 	$stmt->bind_param("si", $remark,$scarId);
+// }
+// SQT
+else if($status == "Submit" && $loginEmpRoleId == 3){
+	$sql = "UPDATE `ScarMaster` SET `Action`=4, `Remark2`=?, `ActionDate2`=current_timestamp where `Id`=? and `Action`=3";
 	$stmt = $conn->prepare($sql);
 	$stmt->bind_param("si", $remark,$scarId);
 }
+
 if($stmt->execute()){
 	$code = 200;
 	$message = "Status updated";

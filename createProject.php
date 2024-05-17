@@ -14,12 +14,15 @@ $jsonData=json_decode($json);
 $loginEmpId = $jsonData->loginEmpId;
 $loginEmpRoleId = $jsonData->loginEmpRoleId;
 $projectName = $jsonData->projectName;
+$capacity = $jsonData->capacity;
+$spvName = $jsonData->spvName;
+$address = $jsonData->address;
 
 $code=0;
 $message="";
-$sql = "INSERT INTO `ProjectMaster`(`ProjectName`) VALUES (?)";
+$sql = "INSERT INTO `ProjectMaster`(`ProjectName`, `Capacity`, `SPV_Name`, `Address`) VALUES (?,?,?,?)";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("s",$projectName);
+$stmt->bind_param("siss",$projectName, $capacity, $spvName, $address);
 if($stmt->execute()){
 	$code = 200;
 	$message = "Successfully";

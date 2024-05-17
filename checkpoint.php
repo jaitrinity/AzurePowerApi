@@ -120,6 +120,26 @@ $responseArr = array();
 		    }
 		    mysqli_stmt_close($stmt);
 		}
+		else if($chkpointRow['IsSql'] == 2){
+		    $valueSql = $chkpointRow["Value"];
+		    $stmt = mysqli_prepare($conn,$valueSql);
+		    mysqli_stmt_bind_param($stmt, 's', $empId);
+		    mysqli_stmt_execute($stmt);
+		    mysqli_stmt_store_result($stmt);
+		    mysqli_stmt_bind_result($stmt,$project);
+		    if(mysqli_stmt_num_rows($stmt) > 0){
+		       $valueArray = array();
+		       while($v = mysqli_stmt_fetch($stmt)){
+		            array_push($valueArray,$project);
+		       }
+		       $json -> value =implode(',',$valueArray); 
+			
+		    }
+		    else{
+		        $json -> value = "";    
+		    }
+		    mysqli_stmt_close($stmt);
+		}
 		else{
 		    $json -> value = $chkpointRow["Value"];    
 		}

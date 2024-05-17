@@ -219,9 +219,9 @@ else if($insertType == "employees"){
 		$stmt->bind_param("ss", $empCode, $mobile);	
 		$message = "Employee already exist on $empCode or $mobile";
 
-		$insertSql = "INSERT INTO `Employees`(`EmpId`, `Name`, `Mobile`, `EmailId`, `Password`, `RoleId`, `TenantId`, `SpocPerson`, `ItemName`, `SampleType`) VALUES (?,?,?,?,?,?,2,?,?,?)";
+		$insertSql = "INSERT INTO `Employees`(`EmpId`, `Name`, `Mobile`, `EmailId`, `Password`, `RoleId`, `Zone`, `TenantId`, `SpocPerson`, `ItemName`, `SampleType`) VALUES (?,?,?,?,?,?,?,2,?,?,?)";
 		$insertStmt = $conn->prepare($insertSql);
-		$insertStmt->bind_param("sssssisss", $empCode, $name, $mobile, $emailId, $password, $roleId, $spocPerson, $itemName, $sampleType);
+		$insertStmt->bind_param("ssssssisss", $empCode, $name, $mobile, $emailId, $password, $roleId, $zone, $spocPerson, $itemName, $sampleType);
 	}
 
 	$stmt->execute();

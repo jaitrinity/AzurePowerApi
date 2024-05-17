@@ -85,6 +85,7 @@ if($event == 'Submit'){
 				$lastTransHdrId = $conn->insert_id;
 				$vendorId="";
 				$isAllMatOk="";
+				$expIr="";
 				// $sum730=0;
 				// $sum732=0;
 				// $sum734=0;
@@ -111,6 +112,9 @@ if($event == 'Submit'){
 
 						if($chkp_id == 434) $vendorId=$value;
 						else if($chkp_id == 435) $isAllMatOk=$value;
+						else if($chkp_id == 1027 || $chkp_id == 1029 || $chkp_id == 1030){
+							$expIr=$value;	
+						}
 
 						// if($mId == 109){
 						// 	if($chkp_id == 730) $sum730 += $value;
@@ -205,26 +209,33 @@ if($event == 'Submit'){
 				// 	$stmt1013->execute();
 				// }
 
+				// SCAR
 				if($mId==2){
 					$venExp = explode(" --- ", $vendorId);
-					$scarSql="INSERT INTO `ScarMaster`(`ActivityId`, `VendorId`) VALUES ($activityId, '$venExp[0]')";
+					$scarSql="INSERT INTO `ScarMaster`(`ActivityId`, `IR_Id`, `VendorId`) VALUES ($activityId, '$expIr', '$venExp[0]')";
 					mysqli_query($conn,$scarSql);
 				}
+				// Travel Expense
 				if($mId==3){
-					$scarSql="INSERT INTO `ExpenseMaster`(`ActivityId`) VALUES ($activityId)";
+					$scarSql="INSERT INTO `ExpenseMaster`(`ActivityId`,`IR_Id`) VALUES ($activityId, '$expIr')";
 					mysqli_query($conn,$scarSql);
-				}
-				if($mId==4){
-					$action = $isAllMatOk == "No" ? 1 : 0;
-					$venExp = explode(" --- ", $vendorId);
-					$mrnSql="INSERT INTO `MrnMaster`(`ActivityId`, `VendorId`, `Action`) VALUES ($activityId, '$venExp[0]', $action)";
-					mysqli_query($conn,$mrnSql);
 
-					if($isAllMatOk == "No"){
-						$scarSql="INSERT INTO `ScarMaster`(`ActivityId`, `VendorId`) VALUES ($activityId, '$venExp[0]')";
-						mysqli_query($conn,$scarSql);
-					}
+					$expIrSql = "UPDATE `InsReqMaster` SET `ExpenseStatus` = 3 WHERE `IR_Id`='$expIr'";
+					$stmtExpIr = $conn->prepare($expIrSql);
+					$stmtExpIr->execute();
 				}
+				// MRN
+				// if($mId==4){
+				// 	$action = $isAllMatOk == "No" ? 1 : 0;
+				// 	$venExp = explode(" --- ", $vendorId);
+				// 	$mrnSql="INSERT INTO `MrnMaster`(`ActivityId`, `IR_Id`, `VendorId`, `Action`) VALUES ($activityId, '$expIr', '$venExp[0]', $action)";
+				// 	mysqli_query($conn,$mrnSql);
+
+				// 	if($isAllMatOk == "No"){
+				// 		$scarSql="INSERT INTO `ScarMaster`(`ActivityId`, `IR_Id`, `VendorId`) VALUES ($activityId, '$expIr', '$venExp[0]')";
+				// 		mysqli_query($conn,$scarSql);
+				// 	}
+				// }
 			}
 		}
 		// for submit todo checklist
@@ -251,6 +262,7 @@ if($event == 'Submit'){
 			}
 			
 			$lastTransHdrId = $activityId;	
+			$isAllMatOk = "";
 			$sum730=0;
 			$sum732=0;
 			$sum734=0;
@@ -280,6 +292,7 @@ if($event == 'Submit'){
 
 					if($chkp_id == 745) $tpiId=$value;
 					else if($chkp_id == 725) $tpiRemark=$value;
+					else if($chkp_id == 435) $isAllMatOk=$value;
 
 					if($mId == 109 || $mId == 86){
 						if($chkp_id == 730) $sum730 += $value;
@@ -383,6 +396,10 @@ if($event == 'Submit'){
 				$stmt = $conn->prepare($det);
 				$stmt->execute();
 			}
+			// else if($mId == 4 && $isAllMatOk == "No"){
+			// 	$scarSql="INSERT INTO `ScarMaster`(`ActivityId`, `IR_Id`) VALUES ($actId, '$irId')";
+			// 	mysqli_query($conn,$scarSql);
+			// }
 		}	
 	}
 	//Change in Mapping table from now onwards
@@ -403,11 +420,27 @@ if($event == 'Submit'){
 		$updateTransHdrSql = "UPDATE TransactionHDR set `Status`='$afterStatus' where ActivityId = $actId";
 		mysqli_query($conn,$updateTransHdrSql);
 
-		$tpiIdExp = explode(" --- ", $tpiId);
-		$tpiEmpId = $tpiIdExp[0];
+		if($mId == "1"){
+			$tpiIdExp = explode(" --- ", $tpiId);
+			$tpiEmpId = $tpiIdExp[0];
 
-		$irStatus="UPDATE `InsReqMaster` SET `Status`='$afterStatus', `TPI`='$tpiEmpId', `Remark`='$tpiRemark' where `IR_Id`='$irId'";
-		mysqli_query($conn,$irStatus);
+			$irStatus="UPDATE `InsReqMaster` SET `Status`='$afterStatus', `TPI`='$tpiEmpId', `Remark`='$tpiRemark' where `IR_Id`='$irId'";
+			mysqli_query($conn,$irStatus);
+		}
+		else if($mId == "4"){
+			$action = $isAllMatOk == "Yes" ? 1 : 0;
+			if($isAllMatOk == "No"){
+				$scarSql="INSERT INTO `ScarMaster`(`ActivityId`, `IR_Id`) VALUES ($actId, '$irId')";
+				mysqli_query($conn,$scarSql);
+			}
+
+			$upMrn = "UPDATE `MrnMaster` set `Action`=$action, `Remark`='$tpiRemark', `ActionDate`=CURRENT_TIMESTAMP where `ActivityId`=$actId and `IR_Id`='$irId'";
+			mysqli_query($conn,$upMrn);
+
+			$upMrnDate = "UPDATE `MDCC_DI` set `MRN_DoneDatetime`=CURRENT_TIMESTAMP where `MRN_ActivityId`=$actId";
+			mysqli_query($conn,$upMrnDate);
+		}
+			
 	}
 	
 	$output = new StdClass;

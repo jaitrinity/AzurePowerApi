@@ -1,0 +1,103 @@
+<?php
+class SaveMrnCheckpointClass{
+	function saveCheckpoint($saveJson){
+		include("dbConfiguration.php");
+
+		$irId = $saveJson["irId"];
+		$diNo = $saveJson["diNo"];
+		$mdccNo = $saveJson["mdccNo"];
+		$empId = $saveJson["empId"];
+		$mId = $saveJson["mId"];
+		$lId = $saveJson["lId"];
+		$event = $saveJson["event"];
+		$geolocation = $saveJson["geolocation"];
+		$mobiledatetime = $saveJson["mobiledatetime"];
+		$timeStamp = $saveJson["timeStamp"];
+		$checklist = $saveJson["checklist"];
+		$assignId = $saveJson["assignId"];
+		// $activityId = $saveJson["activityId"];
+		$mapId = 0;
+
+		$activitySql = "INSERT into `Activity` (`MappingId`, `EmpId`, `MenuId`, `LocationId`, `Event`, `GeoLocation`, `MobileDateTime`) values ('$mapId', '$empId', '$mId', '$lId', '$event', '$geolocation', '$mobiledatetime')";
+		if(mysqli_query($conn,$activitySql)){
+			$activityId = mysqli_insert_id($conn);
+			// echo $activityId;
+
+			$insertMapping = "INSERT INTO `Mapping`(`EmpId`,`MenuId`,`LocationId`,`StartDate`,`EndDate`,`ActivityId`,`IR_Id`) values ('$empId','$mId','$lId',curdate(),curdate(),'$activityId','$irId') ";
+			mysqli_query($conn,$insertMapping);
+
+			$insertInTransHdr="INSERT INTO `TransactionHDR` (`ActivityId`,`Status`) VALUES ('$activityId','DI_0')";
+
+			if(mysqli_query($conn,$insertInTransHdr)){
+				$lastTransHdrId = $conn->insert_id;
+				$sqEmpId = "";
+				for($ii=0;$ii<count($checklist);$ii++){
+					$chObj = $checklist[$ii];
+					$chkpId = $chObj["chkpId"];
+					$value = $chObj["value"];
+					if($chkpId == "sqEmpId"){
+						$sqEmpId = $value;
+					}
+					else{
+						$dateTime = $mobiledatetime;
+						$sampleNo = 1;
+						$dependChkId = 0;
+
+						$insertInTransDtl="INSERT INTO `TransactionDTL` (`ActivityId`,`ChkId`,`Value`,`Datetime`,`SampleNo`,`DependChkId`) VALUES (?,?,?,?,?,?)";
+						$stmt = $conn->prepare($insertInTransDtl);
+						$stmt->bind_param("iissii", $activityId, $chkpId, $value, $dateTime, $sampleNo, $dependChkId);
+						try {
+							$stmt->execute();
+						} catch (Exception $e) {
+							
+						}
+					}
+				}
+
+				$mrnSql="INSERT INTO `MrnMaster`(`ActivityId`, `IR_Id`, `MDCC_No`, `DI_No`, `SQ_EmpId`) VALUES ($activityId, '$irId', '$mdccNo', '$diNo', '$sqEmpId')";
+				mysqli_query($conn,$mrnSql);
+
+				$mrnActId = "UPDATE `MDCC_DI` set `MRN_ActivityId`=$activityId where `IR_Id`='$irId' and `MDCC_No`='$mdccNo' and `DI_No`='$diNo'";
+				mysqli_query($conn,$mrnActId);
+
+				$flowCpSql = "SELECT * FROM `FlowCheckpointMaster` where `MenuId` = $mId";
+				$flowCpResult = mysqli_query($conn,$flowCpSql);
+				while ($flowCpRow = mysqli_fetch_assoc($flowCpResult)){
+					$roleId = $flowCpRow["RoleId"];
+					$flowStatus = $flowCpRow["Status"];
+					$afterStatus = $flowCpRow["AfterStatus"];
+					$flowCheckpointId = $flowCpRow["FlowCheckpointId"];
+					// $flowEmpId = $this->getFlowEmpId($empId, $roleId, $conn);
+					$flowEmpId = $sqEmpId;
+					// echo $flowEmpId.'-1';
+					if($flowEmpId !=""){
+						$flowActSql = "INSERT INTO `FlowActivityMaster`(`ActivityId`,`MenuId`,`Status`,`AfterStatus`,`EmpId`,`FlowCheckpointId`,`IR_Id`) VALUES ($activityId,$mId,'$flowStatus','$afterStatus','$flowEmpId','$flowCheckpointId','$irId')";
+						// echo $flowActSql;
+						mysqli_query($conn,$flowActSql);
+					}
+				}
+			}
+		}
+		// echo $activityId;
+	}
+
+	function getFlowEmpId($empId, $flowRoleId, $conn){
+		$flowEmpId = "";
+		// $flowSql = "SELECT e2.EmpId from (SELECT e.EmpId, e.State, Tenent_Id FROM Employees e where e.EmpId = '$empId') t join Employees e2 on t.State = e2.State where e2.Tenent_Id = t.Tenent_id and e2.RoleId = $flowRoleId ";
+		$flowSql = "SELECT e.EmpId FROM Employees e where e.RoleId = $flowRoleId";
+		// echo $flowSql;
+		$flowQuery = mysqli_query($conn,$flowSql);
+		$ii=0;
+		while ($flowRow = mysqli_fetch_assoc($flowQuery)) {
+			$flowEmpId .= $flowRow["EmpId"];
+			// echo $flowEmpId;
+			if($ii<mysqli_num_rows($flowQuery)-1){
+				$flowEmpId .= ",";
+	 		}
+			$ii++;
+		}
+		return $flowEmpId;
+	}
+}
+
+?>

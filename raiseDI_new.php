@@ -51,6 +51,27 @@ if($stmt->execute()){
 		$stmt1->execute();
 	}
 
+	// 
+	$mrnSql = "SELECT di.DI_No, di.MDCC_No, di.IR_Id, ir.LotNo, e.Name as VendorName, ir.ProjectName, pm.Address as SiteAddress, ir.PO_No, im.SubItemName as MatDesc, di.DeliverQty, di.DeliverDate, di.Remark FROM MDCC_DI di join InsReqMaster ir on di.IR_Id=ir.IR_Id join Employees e on ir.CreateBy=e.EmpId join ProjectMaster pm on ir.ProjectName=pm.ProjectName join ItemMaster im on ir.OfferItem=im.ItemId where id.DI_No='$diNo'";
+	$mrnRow=mysqli_fetch_assoc($mrnSql);
+	$mrnChkList = array();
+	foreach ($mrnRow as $key => $value) {
+		$mrnChkJson = array('chkpId' => $key, 'value' => $value);
+		array_push($mrnChkList, $mrnChkJson);
+	}
+
+	$mobiledatetime = date('Y-m-d H:i:s', time());
+	$timeStamp = date('YmdHis', time());
+
+	$saveMrnJson = array(
+		'irId' => $irId, 'empId' => $loginEmpId, 'mId' => 4, 
+		'lId' => 1, 'event' => 'Submit', 'geolocation' => '0/0', 
+		'mobiledatetime' => $mobiledatetime, 'timeStamp' => $timeStamp, 
+		'checklist' => $mrnChkList, 'assignId' => '', 'activityId' => ''
+	);
+	require 'SaveMrnCheckpointClass.php';
+	$saveMrnClassObj = new SaveMrnCheckpointClass();
+	$saveMrnClassObj->saveCheckpoint($saveMrnJson);
 		
 }
 else{

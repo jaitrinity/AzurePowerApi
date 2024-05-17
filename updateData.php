@@ -142,6 +142,30 @@ else if($updateType == "portalColumn"){
 	);
 	echo json_encode($output);
 }
+else if($updateType == "projectEmpMapping"){
+	$id = $jsonData->id;
+	$ctEmpId = $jsonData->ctEmpId;
+	$sqEmpId = $jsonData->sqEmpId;
+
+	$sql="UPDATE `ProjectMaster` set `CT_EmpId`=$ctEmpId, `SQ_EmpId`='$sqEmpId' where `Id`=$id";
+	$stmt = $conn->prepare($sql);
+
+	if($stmt->execute()){
+		$code = 200;
+		$message = "Project mapping updated";
+	}
+	else{
+		$code = 0;
+		$message = "Something wrong";
+	}
+
+	$output = array(
+		'code' => $code, 
+		'message' => $message
+	);
+	echo json_encode($output);
+
+}
 else{
 	$output = array(
 		'code' => 404, 
