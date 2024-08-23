@@ -403,7 +403,7 @@ function getInfiniteLevelCheckpoints($fillActArr,$pendingObj){
 				else{
 					$apfcpObj->value = "";
 				}
-				$apfcpObj->sampleNo=$apfcp["SampleNo"];
+				$apfcpObj->sampleNo=$apfcp["SampleNo"] == null ? "1" : $apfcp["SampleNo"];
 				
 				$apfdpArray = array();
 				if($apfcp['Dependent'] == "1"){
@@ -425,7 +425,7 @@ function getInfiniteLevelCheckpoints($fillActArr,$pendingObj){
 						$apfdpObj->Chkp_Id = $apfcp['CheckpointId']."_".$apfdp['CheckpointId'];
 						$apfdpObj->editable = '0';
 						$apfdpObj->value = $apfdp['answer'];
-						$apfdpObj->sampleNo = $apfdp['SampleNo'];
+						$apfdpObj->sampleNo = $apfdp['SampleNo'] == null ? "1" : $apfdp['SampleNo'];
 						array_push($apfdpArray,$apfdpObj);
 					}
 				}
@@ -443,7 +443,7 @@ function getInfiniteLevelCheckpoints($fillActArr,$pendingObj){
 				$apcpObj->Chkp_Id = $apcp['CheckpointId'];
 				$apcpObj->editable = $apcp['Editable'];
 				$apcpObj->value = "";
-				$apcpObj->sampleNo = $apcp['SampleSize'];
+				$apcpObj->sampleNo = $apcp['SampleSize'] == null ? "1" : $apcp['SampleSize'];
 				$apdpArray = array();
 				if($apcp['Dependent'] == "1"){
 					$apcplogicArray = explode(":",trim($apcp['Logic']," "));
@@ -466,7 +466,7 @@ function getInfiniteLevelCheckpoints($fillActArr,$pendingObj){
 						$apdpObj->Chkp_Id = $apdp['CheckpointId'];
 						$apdpObj->editable = $apdp['Editable'];
 						$apdpObj->value = "";
-						$apcpObj->sampleNo = $apdp['SampleSize'];
+						$apcpObj->sampleNo = $apdp['SampleSize'] == null ? "1" : $apdp['SampleSize'];
 						array_push($apdpArray,$apdpObj);
 					}
 				}

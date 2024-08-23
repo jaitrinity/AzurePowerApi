@@ -20,6 +20,22 @@ $address = $jsonData->address;
 
 $code=0;
 $message="";
+
+$sql = "SELECT * FROM `ProjectMaster` where `ProjectName`=?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s",$projectName);
+$stmt->execute();
+$query = $stmt->get_result();
+$rowCount = mysqli_num_rows($query);
+if($rowCount != 0){
+	$output = array(
+		'code' => 409, 
+		'message' => $projectName.' project aleady exist'
+	);
+	echo json_encode($output);
+	return;
+}
+
 $sql = "INSERT INTO `ProjectMaster`(`ProjectName`, `Capacity`, `SPV_Name`, `Address`) VALUES (?,?,?,?)";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("siss",$projectName, $capacity, $spvName, $address);

@@ -37,11 +37,34 @@ if($updateType == "employeeStatus"){
 	);
 	echo json_encode($output);
 }
+else if($updateType == "employeeData"){
+	$id = $jsonData->id;
+	$mobile = $jsonData->mobile;
+	$emailId = $jsonData->emailId;
+
+	$sql="UPDATE `Employees` set `Mobile`='$mobile', `EmailId`='$emailId' where `Id`=$id";
+	$stmt = $conn->prepare($sql);
+
+	if($stmt->execute()){
+		$code = 200;
+		$message = "Employee data updated";
+	}
+	else{
+		$code = 0;
+		$message = "Something wrong";
+	}
+
+	$output = array(
+		'code' => $code, 
+		'message' => $message
+	);
+	echo json_encode($output);
+}
 else if($updateType == "projectStatus"){
 	$id = $jsonData->id;
 	$status = $jsonData->status;
 
-	$sql="UPDATE `ProjectMaster` set `IsActive`=$status where `Id`=$id";
+	$sql="UPDATE `ProjectMaster` set `IsActive`=$status, `ActionDate`=current_timestamp where `Id`=$id";
 	$stmt = $conn->prepare($sql);
 
 	if($stmt->execute()){
@@ -145,9 +168,11 @@ else if($updateType == "portalColumn"){
 else if($updateType == "projectEmpMapping"){
 	$id = $jsonData->id;
 	$ctEmpId = $jsonData->ctEmpId;
+	$ctEmpId = implode(",", $ctEmpId);
 	$sqEmpId = $jsonData->sqEmpId;
+	$sqEmpId = implode(",", $sqEmpId);
 
-	$sql="UPDATE `ProjectMaster` set `CT_EmpId`=$ctEmpId, `SQ_EmpId`='$sqEmpId' where `Id`=$id";
+	$sql="UPDATE `ProjectMaster` set `CT_EmpId`='$ctEmpId', `SQ_EmpId`='$sqEmpId' where `Id`=$id";
 	$stmt = $conn->prepare($sql);
 
 	if($stmt->execute()){

@@ -71,6 +71,15 @@ if($oldIrId == ""){
 		$qapGtp = $base64->base64ToAny($qapGtp,$poNo.'_QAPnGTP');
 	$sampleSize=1;
 
+	// $samSql = "SELECT ss.SampleSize FROM LotSizeLogic ls join SampleSizeLogic ss on ls.$sampleCode = ss.SampleSizeCodeLetter where ls.LotSizeMin <= $lotNo and ls.LotSizeMax >= $lotNo";
+	$samSql = "SELECT ss.SampleSize FROM LotSizeLogic ls join SampleSizeLogic ss on ls.$sampleCode = ss.SampleSizeCodeLetter where ls.LotSizeMin <= $offerQty and ls.LotSizeMax >= $offerQty";
+	$samQuery = mysqli_query($conn,$samSql);
+	$samRowCount=mysqli_num_rows($samQuery);
+	if($samRowCount !=0){
+		$samRow = mysqli_fetch_assoc($samQuery);
+		$sampleSize = $samRow["SampleSize"];
+	}
+
 	$confSql="SELECT (`IR_Count`+1) as irCount FROM `Configuration`";
 	$confQuery = mysqli_query($conn,$confSql);
 	$confRow = mysqli_fetch_assoc($confQuery);

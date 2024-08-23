@@ -434,7 +434,7 @@ if($event == 'Submit'){
 				mysqli_query($conn,$scarSql);
 			}
 
-			$upMrn = "UPDATE `MrnMaster` set `Action`=$action, `Remark`='$tpiRemark', `ActionDate`=CURRENT_TIMESTAMP where `ActivityId`=$actId and `IR_Id`='$irId'";
+			$upMrn = "UPDATE `MrnMaster` set `Action`=$action, `Remark`='$tpiRemark', `FlowActivityId`=$activityId, `ActionDate`=CURRENT_TIMESTAMP where `ActivityId`=$actId and `IR_Id`='$irId'";
 			mysqli_query($conn,$upMrn);
 
 			$upMrnDate = "UPDATE `MDCC_DI` set `MRN_DoneDatetime`=CURRENT_TIMESTAMP where `MRN_ActivityId`=$actId";

@@ -37,26 +37,26 @@ else if($status == "Reject" && $loginEmpRoleId == 3){
 	$stmt->bind_param("si", $remark,$scarId);
 }
 // Vendor
-else if($status == "Submit" && $loginEmpRoleId == 5){
+else if($status == "Submit" && $loginEmpRoleId == 2){
 
 	$moreUpdate = "";
 
 	require 'Base64ToAnyClass.php';
 	$base64 = new Base64ToAnyClass();
 	if($defectPhoto !=""){
-		$defectPhoto = $base64->base64ToAny($defectPhoto,$irId.'_DefectPhoto');
+		$defectPhoto = $base64->base64ToAny($defectPhoto,$scarId.'_DefectPhoto');
 		$moreUpdate .= ", `DefectPhoto`='$defectPhoto'";
 	}
 	if($defineAndVerifyRootCauseDoc != ""){
-		$defineAndVerifyRootCauseDoc = $base64->base64ToAny($defineAndVerifyRootCauseDoc,$irId.'_DefectPhoto');
+		$defineAndVerifyRootCauseDoc = $base64->base64ToAny($defineAndVerifyRootCauseDoc,$scarId.'_DefectPhoto');
 		$moreUpdate .= ", `DefineAndVerifyRootCauseDoc`='$defineAndVerifyRootCauseDoc'";
 	}
 
-	$moreUpdate .= ", `ProbDesc`='$probDesc', `ImmeCorrecDet`='$immeCorrecDet', `DefineAndVerifyRootCause`='$defineAndVerifyRootCause', `CorrectiveActions`='$correctiveActions', `TargetDate`='$targetDate'";
+	$moreUpdate .= ", `ProbDesc`=?, `ImmeCorrecDet`='$immeCorrecDet', `DefineAndVerifyRootCause`='$defineAndVerifyRootCause', `CorrectiveActions`=?, `TargetDate`='$targetDate'";
 
 	$sql = "UPDATE `ScarMaster` SET `Action`=3, `Remark1`=?, `ActionDate1`=current_timestamp $moreUpdate where `Id`=? and `Action`=1";
 	$stmt = $conn->prepare($sql);
-	$stmt->bind_param("si", $remark,$scarId);
+	$stmt->bind_param("sssi", $remark,$probDesc,$correctiveActions,$scarId);
 }
 // else if($status == "Reject" && $loginEmpRoleId == 5){
 // 	$sql = "UPDATE `ScarMaster` SET `Action`=4, `Remark1`=?, `ActionDate1`=current_timestamp where `Id`=? and `Action`=1";

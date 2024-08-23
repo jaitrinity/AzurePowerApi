@@ -6,7 +6,6 @@ if($methodType != "POST"){
 	echo json_encode($output);
 	return;
 }
-$selectType = $_REQUEST["selectType"];
 
 $json = file_get_contents('php://input');
 $jsonData=json_decode($json);
@@ -15,7 +14,7 @@ $loginEmpId = $jsonData->loginEmpId;
 $loginEmpRoleId = $jsonData->loginEmpRoleId;
 $irId = $jsonData->irId;
 
-$sql="SELECT m.Category, m.SubCategory, m.Caption, m.CheckpointId, ma.ActivityId, date_format(a.MobileDateTime,'%d-%m-%Y %H:%i:%s') as `MobileDateTime`, (case when m.SampleSize is null then ir.SampleSize else m.SampleSize end) as SampleSize FROM Mapping ma join Menu m on ma.MenuId=m.MenuId left join InsReqMaster ir on ma.IR_Id=ir.IR_Id left join Activity a on ma.ActivityId=a.ActivityId where ma.IR_Id=$irId and ma.MenuId != 1 order by ma.MappingId";
+$sql="SELECT m.Category, m.SubCategory, m.Caption, m.CheckpointId, ma.ActivityId, date_format(a.MobileDateTime,'%d-%m-%Y %H:%i:%s') as `MobileDateTime`, (case when m.SampleSize is null then ir.SampleSize else m.SampleSize end) as SampleSize FROM Mapping ma join Menu m on ma.MenuId=m.MenuId left join InsReqMaster ir on ma.IR_Id=ir.IR_Id left join Activity a on ma.ActivityId=a.ActivityId where ma.IR_Id='$irId' and ma.MenuId != 1 order by ma.MappingId";
 $query = mysqli_query($conn,$sql);
 $resultList = array();
 while ($row = mysqli_fetch_assoc($query)) {
@@ -74,6 +73,18 @@ while ($row = mysqli_fetch_assoc($query)) {
 	);
 	array_push($resultList, $resultJson);
 }
-echo json_encode($resultList);
+// echo json_encode($resultList);
+
+$audSql = "SELECT (case when e.RoleId in (2,4,5) then e.SpocPerson else e.Name end) as name, s.StatusTxt as status, a.Remark as remark, a.AuditDate as auditDate FROM IR_Audit a join IR_Status s on a.AfterStatus=s.Status join Employees e on a.EmpId=e.EmpId WHERE a.IR_Id = '$irId' ORDER by a.Id";
+$audQuery = mysqli_query($conn,$audSql);
+$auditList = array();
+while ($audRow = mysqli_fetch_assoc($audQuery)) {
+	array_push($auditList, $audRow);
+}
+
+$output = array('resultList' => $resultList, 'auditList' => $auditList);
+echo json_encode($output);
+
+
 
 ?>

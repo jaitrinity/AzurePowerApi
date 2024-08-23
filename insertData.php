@@ -189,7 +189,7 @@ else if($insertType == "employees"){
 	$passTxt = $mobile;
 	$password = base64_encode($passTxt);
 
-	if($roleType == "Employee"){
+	if($roleType == "Azure Employee"){
 		$sql = "SELECT * from `Employees` where (`EmpId`=? or `Mobile`=?) and `IsActive` = 1";
 		$stmt = $conn->prepare($sql);
 		$stmt->bind_param("ss", $empCode, $mobile);	

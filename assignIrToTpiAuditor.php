@@ -17,7 +17,8 @@ $irId = $jsonData->irId;
 $remark = $jsonData->remarks;
 $tpiAuditorEmpId = $jsonData->tpiAuditorEmpId;
 
-$sql = "UPDATE `InsReqMaster` SET `Status`='IR_2', `TPI_Auditor`=?, `TPI_Remark`=? where `IR_Id`=? and `Status`='IR_1'";
+$afterStatus="IR_2";
+$sql = "UPDATE `InsReqMaster` SET `Status`='$afterStatus', `TPI_Auditor`=?, `TPI_Remark`=? where `IR_Id`=? and `Status`='IR_1'";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("sss", $tpiAuditorEmpId, $remark, $irId);
 if($stmt->execute()){
@@ -35,6 +36,11 @@ if($stmt->execute()){
 
 	$code = 200;
 	$message = "Status updated";
+
+	$auditSql = "INSERT INTO `IR_Audit`(`IR_Id`, `EmpId`, `RoleId`, `AfterStatus`, `Remark`) VALUES (?,?,?,?,?)";
+	$auditStmt = $conn->prepare($auditSql);
+	$auditStmt->bind_param("ssiss",$irId,$loginEmpId,$loginEmpRoleId,$afterStatus,$remark);
+	$auditStmt->execute();
 
 	$tokens = "";
 	$tokenSql = "SELECT `Token` FROM `Devices` where `EmpId`='$tpiAuditorEmpId' and `Active`=1";

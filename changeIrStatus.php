@@ -16,6 +16,8 @@ $loginEmpRoleId = $jsonData->loginEmpRoleId;
 $irId = $jsonData->irId;
 $beforeStatus = $jsonData->beforeStatus;
 $tpiEmpId = $jsonData->tpiEmpId;
+// $offerQty = $jsonData->offerQty;
+// $sampleType = $jsonData->sampleType;
 $tpiAuditorEmpId = $jsonData->tpiAuditorEmpId;
 $status = $jsonData->status;
 $observation = $jsonData->observation;
@@ -32,20 +34,36 @@ $correctiveActions = $jsonData->correctiveActions;
 $targetDate = $jsonData->targetDate;
 $remark = $jsonData->remark;
 $mdccNo = $irId.'_'.rand(1000,9999);
+$auditRemark="";
 $moreUpdate="";
 if($beforeStatus == "IR_0"){
-	$moreUpdate .= ", `Remark`='$remark'";
-	$moreUpdate .= ", `TPI`='$tpiEmpId'";
+	// $sampleSize = 1;
+
+	// $samSql = "SELECT ss.SampleSize FROM LotSizeLogic ls join SampleSizeLogic ss on ls.$sampleType = ss.SampleSizeCodeLetter where ls.LotSizeMin <= $offerQty and ls.LotSizeMax >= $offerQty";
+
+	// $samQuery = mysqli_query($conn,$samSql);
+	// $samRowCount=mysqli_num_rows($samQuery);
+	// if($samRowCount !=0){
+	// 	$samRow = mysqli_fetch_assoc($samQuery);
+	// 	$sampleSize = $samRow["SampleSize"];
+	// }
+
+	// $moreUpdate .= ", `Remark`='$remark', `TPI`='$tpiEmpId', `SampleType`='$sampleType', `SampleSize`=$sampleSize";
+
+	$moreUpdate .= ", `Remark`='$remark', `TPI`='$tpiEmpId'";
+	$auditRemark = $remark;
 }
 else if($beforeStatus == "IR_1"){
-	$moreUpdate .= ", `TPI_Remark`='$remark'";
-	$moreUpdate .= ", `TPI_Auditor`='$tpiAuditorEmpId'";
+	$moreUpdate .= ", `TPI_Remark`='$remark', `TPI_Auditor`='$tpiAuditorEmpId'";
+	$auditRemark = $remark;
 }
 else if($beforeStatus == "IR_3"){
 	$moreUpdate .= ", `TPI_Observation`='$observation', `Declarartion`='$declaration'";
+	$auditRemark = $remark;
 }
 else if($beforeStatus == "IR_4"){
 	$moreUpdate .= ", `SQT_Observation`='$observation', `MaterialDispatchStatus`='$materialDispatchStatus'";
+	$auditRemark = $remark;
 	if($materialDispatchStatus == "MDCC"){
 		$status = "IR_5";
 		$moreUpdate .= ", `MDCC_No`='$mdccNo'";
@@ -78,6 +96,7 @@ else if($beforeStatus == "IR_101"){
 	}
 
 	$moreUpdate .= ", `ProbDesc`='$probDesc', `ImmeCorrecDet`='$immeCorrecDet', `DefineAndVerifyRootCause`='$defineAndVerifyRootCause', `CorrectiveActions`='$correctiveActions', `TargetDate`='$targetDate'";
+	$auditRemark = $probDesc;
 }
 
 $sql = "UPDATE `InsReqMaster` SET `Status`=? $moreUpdate where `IR_Id`=? and `Status`=?";
@@ -102,7 +121,7 @@ if($stmt->execute()){
 	else{
 		$auditSql = "INSERT INTO `IR_Audit`(`IR_Id`, `EmpId`, `RoleId`, `AfterStatus`, `Remark`) VALUES (?,?,?,?,?)";
 		$auditStmt = $conn->prepare($auditSql);
-		$auditStmt->bind_param("ssiss",$irId,$loginEmpId,$loginEmpRoleId,$status,$remark);
+		$auditStmt->bind_param("ssiss",$irId,$loginEmpId,$loginEmpRoleId,$status,$auditRemark);
 		$auditStmt->execute();
 
 		if($status == "IR_5"){

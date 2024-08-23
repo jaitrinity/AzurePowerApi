@@ -17,20 +17,41 @@ $irId = $jsonData->irId;
 $status = $jsonData->status;
 $remark = $jsonData->remark;
 $tpiEmpId = $jsonData->tpiEmpId;
+$afterStatus="";
 
 if($status == "Approve"){
-	$sql = "UPDATE `InsReqMaster` SET `TPI`=?, `Status`='IR_1', `Remark`=? where `IR_Id`=? and `Status`='IR_0'";
+	// ---
+	$offerQty = $jsonData->offerQty;
+	$sampleType = $jsonData->sampleType;
+	$sampleSize = 1;
+
+	$samSql = "SELECT ss.SampleSize FROM LotSizeLogic ls join SampleSizeLogic ss on ls.$sampleType = ss.SampleSizeCodeLetter where ls.LotSizeMin <= $offerQty and ls.LotSizeMax >= $offerQty";
+
+	$samQuery = mysqli_query($conn,$samSql);
+	$samRowCount=mysqli_num_rows($samQuery);
+	if($samRowCount !=0){
+		$samRow = mysqli_fetch_assoc($samQuery);
+		$sampleSize = $samRow["SampleSize"];
+	}
+	$afterStatus = "IR_1";
+	$sql = "UPDATE `InsReqMaster` SET `Status`='$afterStatus', `TPI`=?, `Remark`=?, `SampleType`=?, `SampleSize`=? where `IR_Id`=? and `Status`='IR_0'";
 	$stmt = $conn->prepare($sql);
-	$stmt->bind_param("ssi",$tpiEmpId, $remark,$irId);
+	$stmt->bind_param("sssis",$tpiEmpId,$remark,$sampleType,$sampleSize,$irId);
 }
 else if($status == "Reject"){
-	$sql = "UPDATE `InsReqMaster` SET `Status`='IR_101', `Remark`=? where `IR_Id`=? and `Status`='IR_0'";
+	$afterStatus = "IR_101";
+	$sql = "UPDATE `InsReqMaster` SET `Status`='$afterStatus', `Remark`=? where `IR_Id`=? and `Status`='IR_0'";
 	$stmt = $conn->prepare($sql);
 	$stmt->bind_param("si", $remark,$irId);
 }
 if($stmt->execute()){
 	$code = 200;
 	$message = "Status updated";
+
+	$auditSql = "INSERT INTO `IR_Audit`(`IR_Id`, `EmpId`, `RoleId`, `AfterStatus`, `Remark`) VALUES (?,?,?,?,?)";
+	$auditStmt = $conn->prepare($auditSql);
+	$auditStmt->bind_param("ssiss",$irId,$loginEmpId,$loginEmpRoleId,$afterStatus,$remark);
+	$auditStmt->execute();
 
 	$tokens = "";
 	$tokenSql = "SELECT `Token` FROM `Devices` where `EmpId`='$tpiEmpId' and `Active`=1";
@@ -60,17 +81,17 @@ if($stmt->execute()){
 		$notiStmt->execute();
 	}
 
-	$updateRowCount = mysqli_affected_rows($conn);
-	if($updateRowCount == 0){
-		$code = 404;
-		$message = "No record found";
-		$output = array(
-			'code' => $code, 
-			'message' => $message
-		);
-		echo json_encode($output);
-		return;
-	}
+	// $updateRowCount = mysqli_affected_rows($conn);
+	// if($updateRowCount == 0){
+	// 	$code = 404;
+	// 	$message = "No record found";
+	// 	$output = array(
+	// 		'code' => $code, 
+	// 		'message' => $message
+	// 	);
+	// 	echo json_encode($output);
+	// 	return;
+	// }
 }
 else{
 	$code = 0;
