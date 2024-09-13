@@ -181,6 +181,7 @@ else if($insertType == "employees"){
 	$mobile = $jsonData->mobile;
 	$emailId = $jsonData->emailId;
 	$roleId = $jsonData->roleId;
+	$state = $jsonData->state;
 	$zone = $jsonData->zone;
 	$spocPerson = $jsonData->spocPerson;
 	$itemName = $jsonData->itemId;
@@ -207,9 +208,9 @@ else if($insertType == "employees"){
 		$stmt->bind_param("ss", $empCode, $mobile);	
 		$message = "Employee already exist on $empCode or $mobile";
 
-		$insertSql = "INSERT INTO `Employees`(`EmpId`, `Name`, `Mobile`, `EmailId`, `Password`, `RoleId`, `Zone`, `TenantId`, `SpocPerson`) VALUES (?,?,?,?,?,?,?,3,?)";
+		$insertSql = "INSERT INTO `Employees`(`EmpId`, `Name`, `Mobile`, `EmailId`, `Password`, `RoleId`, `State` `Zone`, `TenantId`, `SpocPerson`) VALUES (?,?,?,?,?,?,?,?,3,?)";
 		$insertStmt = $conn->prepare($insertSql);
-		$insertStmt->bind_param("sssssiss", $empCode, $name, $mobile, $emailId, $password, $roleId, $zone, $spocPerson);
+		$insertStmt->bind_param("ssssssiss", $empCode, $name, $mobile, $emailId, $password, $roleId, $state, $zone, $spocPerson);
 	}
 	else if($roleType == "Vendor"){
 		$roleId = 2;

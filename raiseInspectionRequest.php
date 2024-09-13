@@ -93,8 +93,8 @@ if($stmt->execute()){
 	$code = 200;
 	$message = "Successfully raise IR";
 
-	$mobileNotification = true;
-	$mailNotification = true;
+	$mobileNotification = false;
+	$mailNotification = false;
 	if($mobileNotification){
 		$sqtEmpId = "";
 		$tokens = "";
@@ -163,6 +163,12 @@ if($stmt->execute()){
 			// $notiStmt->execute();
 		}
 	}
+
+	$t = strtotime("+120 minutes");
+	$otpExpDatetime = date("Y-m-d H:i:s",$t);
+
+	$createEvent = "CREATE EVENT `EV_$t` ON SCHEDULE AT '$otpExpDatetime' ON COMPLETION NOT PRESERVE ENABLE DO update `InsReqMaster` set `Status`='IR_200' where `IR_Id`='$newIrId' and `Status`='IR_0'";
+	mysqli_query($conn,$createEvent);
 
 		
 

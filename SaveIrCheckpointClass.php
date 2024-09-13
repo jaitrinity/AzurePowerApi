@@ -65,6 +65,9 @@ class SaveIrCheckpointClass{
 					}
 				}
 			}
+
+			$sql = "UPDATE `InsReqMaster` set `ActivityId`=$activityId where `IR_Id`='$irId'";
+			mysqli_query($conn,$sql);
 		}
 		// echo $activityId;
 	}

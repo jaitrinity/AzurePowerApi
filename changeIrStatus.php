@@ -73,10 +73,13 @@ else if($beforeStatus == "IR_4"){
 	}
 }
 else if($beforeStatus == "IR_101"){
-	if($status == "IR_102"){
+	if($status == "IR_5.1"){
+		$moreUpdate .= ", `Rework`='Deviation'";
+	}
+	else if($status == "IR_102"){
 		$moreUpdate .= ", `Rework`='Rework & offer'";
 	}
-	else{
+	else if($status == "IR_102.1"){
 		$moreUpdate .= ", `Rework`='Rework with deviation'";
 	}
 

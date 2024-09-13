@@ -19,7 +19,7 @@ if($loginEmpRoleId == 2){
 }
 // TPI
 else if($loginEmpRoleId == 4){
-	$filterSql .= "and ir.`TPI`='$loginEmpId' ";
+	$filterSql .= "and (FIND_IN_SET('$loginEmpId', ir.`Multi_TPI`) <> 0 or ir.`TPI`='$loginEmpId') ";
 }
 // TPI Auditor
 else if($loginEmpRoleId == 5){

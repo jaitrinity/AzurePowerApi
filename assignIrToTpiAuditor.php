@@ -18,7 +18,7 @@ $remark = $jsonData->remarks;
 $tpiAuditorEmpId = $jsonData->tpiAuditorEmpId;
 
 $afterStatus="IR_2";
-$sql = "UPDATE `InsReqMaster` SET `Status`='$afterStatus', `TPI_Auditor`=?, `TPI_Remark`=? where `IR_Id`=? and `Status`='IR_1'";
+$sql = "UPDATE `InsReqMaster` SET `TPI`='$loginEmpId', `Status`='$afterStatus', `TPI_Auditor`=?, `TPI_Remark`=? where `IR_Id`=? and `Status`='IR_1'";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("sss", $tpiAuditorEmpId, $remark, $irId);
 if($stmt->execute()){

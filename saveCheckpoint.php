@@ -293,6 +293,8 @@ if($event == 'Submit'){
 					if($chkp_id == 745) $tpiId=$value;
 					else if($chkp_id == 725) $tpiRemark=$value;
 					else if($chkp_id == 435) $isAllMatOk=$value;
+					else if($chkp_id == 1301) $tpiState=$value;
+					else if($chkp_id == 1302) $sampleType=$value;
 
 					if($mId == 109 || $mId == 86){
 						if($chkp_id == 730) $sum730 += $value;
@@ -421,10 +423,33 @@ if($event == 'Submit'){
 		mysqli_query($conn,$updateTransHdrSql);
 
 		if($mId == "1"){
-			$tpiIdExp = explode(" --- ", $tpiId);
-			$tpiEmpId = $tpiIdExp[0];
+			// $tpiIdExp = explode(" --- ", $tpiId);
+			// $tpiEmpId = $tpiIdExp[0];
 
-			$irStatus="UPDATE `InsReqMaster` SET `Status`='$afterStatus', `TPI`='$tpiEmpId', `Remark`='$tpiRemark' where `IR_Id`='$irId'";
+			// $irStatus="UPDATE `InsReqMaster` SET `Status`='$afterStatus', `TPI`='$tpiEmpId', `Remark`='$tpiRemark' where `IR_Id`='$irId'";
+			// mysqli_query($conn,$irStatus);
+
+			$qtySql = "SELECT `OfferQty` FROM `InsReqMaster` where `IR_Id`='$irId'";
+
+			$sampleSize = 1;
+			$samSql = "SELECT ss.SampleSize FROM LotSizeLogic ls join SampleSizeLogic ss on ls.$sampleType = ss.SampleSizeCodeLetter where ls.LotSizeMin <= ($qtySql) and ls.LotSizeMax >= ($qtySql)";
+			$samQuery = mysqli_query($conn,$samSql);
+			$samRowCount=mysqli_num_rows($samQuery);
+			if($samRowCount !=0){
+				$samRow = mysqli_fetch_assoc($samQuery);
+				$sampleSize = $samRow["SampleSize"];
+			}
+
+			$tpiSql = "SELECT `EmpId` FROM `Employees` where `State`='$tpiState' and `RoleId`=4 and `IsActive`=1";
+			$tpiQuery = mysqli_query($conn,$tpiSql);
+			$tpiEmpList = array();
+			while ($tpiRow = mysqli_fetch_assoc($tpiQuery)) {
+				array_push($tpiEmpList, $tpiRow["EmpId"]);
+			}
+
+			$multiTpiEmpId = implode(",", $tpiEmpList);
+
+			$irStatus = "UPDATE `InsReqMaster` SET `Status`='$afterStatus', `Multi_TPI`='$multiTpiEmpId', `TPI_State`='$tpiState', `Remark`='$tpiRemark', `SampleType`='$sampleType', `SampleSize`='$sampleSize' where `IR_Id`='$irId'";
 			mysqli_query($conn,$irStatus);
 		}
 		else if($mId == "4"){

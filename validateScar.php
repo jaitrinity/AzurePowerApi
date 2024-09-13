@@ -64,8 +64,18 @@ else if($status == "Submit" && $loginEmpRoleId == 2){
 // 	$stmt->bind_param("si", $remark,$scarId);
 // }
 // SQT
-else if($status == "Submit" && $loginEmpRoleId == 3){
+// else if($status == "Submit" && $loginEmpRoleId == 3){
+// 	$sql = "UPDATE `ScarMaster` SET `Action`=4, `Remark2`=?, `ActionDate2`=current_timestamp where `Id`=? and `Action`=3";
+// 	$stmt = $conn->prepare($sql);
+// 	$stmt->bind_param("si", $remark,$scarId);
+// }
+else if($status == "Approve" && $loginEmpRoleId == 3){
 	$sql = "UPDATE `ScarMaster` SET `Action`=4, `Remark2`=?, `ActionDate2`=current_timestamp where `Id`=? and `Action`=3";
+	$stmt = $conn->prepare($sql);
+	$stmt->bind_param("si", $remark,$scarId);
+}
+else if($status == "Reject" && $loginEmpRoleId == 3){
+	$sql = "UPDATE `ScarMaster` SET `Action`=5, `Remark2`=?, `ActionDate2`=current_timestamp where `Id`=? and `Action`=3";
 	$stmt = $conn->prepare($sql);
 	$stmt->bind_param("si", $remark,$scarId);
 }
